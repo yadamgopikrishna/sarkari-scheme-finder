@@ -1,0 +1,26 @@
+{
+  "name": "sarkari-scheme-finder",
+  "version": "1.0.0",
+  "description": "Sarkari Scheme Finder - Government Scheme Eligibility & Recommendation Portal",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "start": "concurrently \"npm start --prefix server\" \"npm run preview --prefix client\"",
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "tunnel": "ngrok http 5173",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "mern",
+    "sarkari-schemes",
+    "government-portal",
+    "eligibility-engine"
+  ],
+  "author": "Sarkari Scheme Finder Team",
+  "license": "ISC"
+}
