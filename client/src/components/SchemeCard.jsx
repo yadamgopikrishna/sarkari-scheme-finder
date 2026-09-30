@@ -24,7 +24,7 @@ export default function SchemeCard({
   onCompareToggle,
   isCompared = false,
 }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, requireAuth } = useAuth();
   const { t } = useLanguage();
   const [isSaved, setIsSaved] = useState(isSavedInitial);
   const [saving, setSaving] = useState(false);
@@ -33,8 +33,7 @@ export default function SchemeCard({
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      alert('Please log in or register to bookmark schemes to your profile.');
+    if (!requireAuth('Save / Bookmark Scheme')) {
       return;
     }
 
@@ -153,11 +152,23 @@ export default function SchemeCard({
       <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           {onCompareToggle && (
-            <label className="flex items-center gap-1 text-xs text-slate-600 cursor-pointer select-none">
+            <label
+              onClick={(e) => {
+                if (!isAuthenticated) {
+                  e.preventDefault();
+                  requireAuth('Scheme Comparison Tool');
+                }
+              }}
+              className="flex items-center gap-1 text-xs text-slate-600 cursor-pointer select-none"
+            >
               <input
                 type="checkbox"
                 checked={isCompared}
-                onChange={() => onCompareToggle(scheme)}
+                onChange={() => {
+                  if (requireAuth('Scheme Comparison Tool')) {
+                    onCompareToggle(scheme);
+                  }
+                }}
                 className="w-3.5 h-3.5 text-orange-600 rounded border-slate-300 focus:ring-orange-500"
               />
               <span className="hidden sm:inline">Compare</span>

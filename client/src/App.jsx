@@ -32,9 +32,30 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/schemes" element={<BrowseSchemesPage />} />
           <Route path="/schemes/:id" element={<SchemeDetailsPage />} />
-          <Route path="/check-eligibility" element={<EligibilityFormPage />} />
-          <Route path="/results" element={<ResultsPage />} />
-          <Route path="/compare" element={<CompareSchemesPage />} />
+          <Route
+            path="/check-eligibility"
+            element={
+              <ProtectedRoute>
+                <EligibilityFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/results"
+            element={
+              <ProtectedRoute>
+                <ResultsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/compare"
+            element={
+              <ProtectedRoute>
+                <CompareSchemesPage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Citizen Protected Routes */}
           <Route

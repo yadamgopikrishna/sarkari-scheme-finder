@@ -23,11 +23,13 @@ import {
   Building,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
 import SchemeCard from '../components/SchemeCard';
 import api from '../services/api';
 
 export default function HomePage() {
   const { t } = useLanguage();
+  const { requireAuth } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalSchemes: 23,
@@ -154,6 +156,11 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <Link
               to="/check-eligibility"
+              onClick={(e) => {
+                if (!requireAuth('7-Step Eligibility Wizard')) {
+                  e.preventDefault();
+                }
+              }}
               className="w-full sm:w-auto px-8 py-3.5 rounded-xl text-sm font-extrabold text-white bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:to-amber-700 shadow-lg hover:shadow-orange-500/25 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
               <CheckCircle2 className="w-5 h-5" />
@@ -364,6 +371,11 @@ export default function HomePage() {
           </div>
           <Link
             to="/check-eligibility"
+            onClick={(e) => {
+              if (!requireAuth('7-Step Eligibility Wizard')) {
+                e.preventDefault();
+              }
+            }}
             className="px-8 py-3.5 rounded-xl font-extrabold text-sm text-slate-900 bg-white hover:bg-orange-50 transition-all shadow-md shrink-0 flex items-center gap-2"
           >
             <span>Check My Eligibility Now</span>

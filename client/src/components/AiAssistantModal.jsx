@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, X, Send, Sparkles, MessageSquare, ExternalLink, RefreshCw, Trash2, HelpCircle } from 'lucide-react';
+import { Bot, X, Send, Sparkles, MessageSquare, ExternalLink, RefreshCw, Trash2, HelpCircle, User, ArrowRight } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Link } from 'react-router-dom';
 
@@ -10,34 +11,26 @@ import { Link } from 'react-router-dom';
 function renderFormattedMessage(content) {
   if (!content) return null;
 
-  // Split by double newlines into paragraphs
   const paragraphs = content.split('\n');
 
   return paragraphs.map((para, pIdx) => {
     if (!para.trim()) return <div key={pIdx} className="h-1.5" />;
 
-    // Check if heading (### or ##)
     const isHeading = para.startsWith('### ') || para.startsWith('## ');
     const headingText = isHeading ? para.replace(/^#+\s*/, '') : null;
 
-    // Bullet points
     const isBullet = para.startsWith('• ') || para.startsWith('* ') || para.startsWith('- ');
     const cleanText = isHeading ? headingText : (isBullet ? para.substring(2) : para);
 
-    // Parse inline bold and links
     const parts = [];
     let remaining = cleanText;
     let keyIdx = 0;
 
     while (remaining.length > 0) {
-      // Match markdown link [label](url)
       const linkMatch = remaining.match(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/);
-      // Match bold **text**
       const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
-      // Match code `code`
       const codeMatch = remaining.match(/`([^`]+)`/);
 
-      // Determine earliest match
       let firstMatch = null;
       let matchType = null;
       let minIndex = remaining.length;
@@ -124,6 +117,7 @@ function renderFormattedMessage(content) {
 }
 
 export default function AiAssistantModal() {
+  const { isAuthenticated, requireAuth } = useAuth();
   const { currentLang, t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -131,19 +125,29 @@ export default function AiAssistantModal() {
 
   const initialMessage = {
     sender: 'assistant',
-    text: `🙏 **Namaste!** I am your **Sarkari Scheme Assistant AI**.
+    text: `🙏 **Namaste! I'm your Sarkari Scheme Assistant AI.**
 
-I can answer your questions about Central and State government schemes, explain eligibility requirements, provide document checklists, or help you find schemes tailored to your profile.
+Think of me like **ChatGPT for Indian Government Schemes**! I can have a natural, friendly conversation with you to find welfare schemes, explain age & income criteria, give you document checklists, and walk you through how to apply online or offline.
 
-**Try asking:**
-• *"What schemes are available for farmers in Andhra Pradesh?"*
-• *"What documents are needed to apply for a scholarship?"*
+**Feel free to ask me in plain words:**
+• *"I am a farmer from Andhra Pradesh looking for crop assistance."*
+• *"Scholarships and fee reimbursement for college students."*
 • *"How do I check my eligibility using the 7-step wizard?"*
-• *"Tell me about Ayushman Bharat health card benefits."*`,
+• *"What documents do I need to prepare before applying?"*
+• *"Tell me about Ayushman Bharat health card benefits."*
+
+How can I help you or your family today?`,
     matchedSchemes: [],
+    suggestedPrompts: [
+      'How do I check my eligibility?',
+      'What documents are required?',
+      'Schemes for farmers in AP',
+      'Scholarships for college students',
+    ],
   };
 
   const [messages, setMessages] = useState([initialMessage]);
+  const [activePrompts, setActivePrompts] = useState(initialMessage.suggestedPrompts);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -154,24 +158,29 @@ I can answer your questions about Central and State government schemes, explain 
     if (isOpen) {
       scrollToBottom();
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, loading]);
 
-  const quickPrompts = [
-    'How do I check my eligibility?',
-    'What documents are required?',
-    'How and where do I apply?',
-    'Schemes for farmers in AP',
-    'Scholarships for college students',
-    'Ayushman Bharat health coverage',
-    'Official helplines & complaints',
-    'Old age pension schemes',
-  ];
+  const handleToggle = () => {
+    // If not authenticated, trigger the login warning modal!
+    if (!isAuthenticated) {
+      requireAuth('AI Scheme Assistant Chat');
+      return;
+    }
+    setIsOpen(!isOpen);
+  };
 
   const handleClearChat = () => {
     setMessages([initialMessage]);
+    setActivePrompts(initialMessage.suggestedPrompts);
   };
 
   const handleSend = async (queryText) => {
+    // Extra safety: ensure user is authenticated
+    if (!isAuthenticated) {
+      requireAuth('AI Scheme Assistant Chat');
+      return;
+    }
+
     const text = queryText || input;
     if (!text.trim() || loading) return;
 
@@ -181,27 +190,38 @@ I can answer your questions about Central and State government schemes, explain 
     setLoading(true);
 
     try {
+      // Build conversation history for multi-turn context
+      const conversationHistory = messages.map((m) => ({
+        role: m.sender === 'user' ? 'user' : 'assistant',
+        content: m.text,
+      }));
+
       const res = await api.post('/chat', {
         message: text,
         language: currentLang,
+        conversationHistory,
       });
 
       if (res.data.success) {
+        const replyData = res.data.data;
         setMessages((prev) => [
           ...prev,
           {
             sender: 'assistant',
-            text: res.data.data.reply,
-            matchedSchemes: res.data.data.matchedSchemes || [],
+            text: replyData.reply,
+            matchedSchemes: replyData.matchedSchemes || [],
           },
         ]);
+        if (replyData.suggestedPrompts && replyData.suggestedPrompts.length > 0) {
+          setActivePrompts(replyData.suggestedPrompts);
+        }
       }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
         {
           sender: 'assistant',
-          text: 'Sorry, I encountered an issue retrieving verified scheme records. Please try again or browse our scheme directory directly.',
+          text: 'I apologize, but I encountered an issue retrieving verified scheme records right now. Please try asking again or browse our scheme directory directly.',
           matchedSchemes: [],
         },
       ]);
@@ -214,8 +234,8 @@ I can answer your questions about Central and State government schemes, explain 
     <>
       {/* Floating Widget Trigger Button */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-full shadow-2xl hover:shadow-orange-500/20 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-orange-300"
+        onClick={handleToggle}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white rounded-full shadow-2xl hover:shadow-orange-500/30 transition-all transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-orange-300"
         aria-label="Open Scheme Assistant AI"
       >
         <div className="relative">
@@ -227,7 +247,7 @@ I can answer your questions about Central and State government schemes, explain 
 
       {/* Floating Chat Modal */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 sm:right-6 w-[92vw] sm:w-[460px] max-h-[640px] h-[82vh] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
+        <div className="fixed bottom-20 right-4 sm:right-6 w-[94vw] sm:w-[460px] max-h-[660px] h-[84vh] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-5 duration-200">
           {/* Header */}
           <div className="bg-gradient-to-r from-slate-900 to-sarkari-navy text-white p-3.5 flex items-center justify-between border-b border-slate-800">
             <div className="flex items-center gap-2.5">
@@ -238,17 +258,17 @@ I can answer your questions about Central and State government schemes, explain 
                 <h3 className="font-bold text-sm leading-tight flex items-center gap-1.5">
                   Scheme Assistant AI
                   <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-mono">
-                    Grounded
+                    ChatGPT Style
                   </span>
                 </h3>
-                <p className="text-[11px] text-slate-400">Central & State Government Schemes Knowledge</p>
+                <p className="text-[11px] text-slate-400">Friendly welfare advisor • Multi-turn conversational</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={handleClearChat}
                 className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
-                title="Restart Chat"
+                title="Restart Conversation"
                 aria-label="Restart conversation"
               >
                 <Trash2 className="w-4 h-4" />
@@ -264,70 +284,95 @@ I can answer your questions about Central and State government schemes, explain 
           </div>
 
           {/* Quick Prompts Bar */}
-          <div className="p-2 bg-slate-50 border-b border-slate-100 overflow-x-auto flex gap-1.5 scrollbar-none text-[11px]">
-            {quickPrompts.map((prompt, i) => (
-              <button
-                key={i}
-                onClick={() => handleSend(prompt)}
-                className="whitespace-nowrap px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-colors shrink-0 font-medium"
-              >
-                {prompt}
-              </button>
-            ))}
-          </div>
+          {activePrompts && activePrompts.length > 0 && (
+            <div className="p-2 bg-slate-50 border-b border-slate-100 overflow-x-auto flex gap-1.5 scrollbar-none text-[11px]">
+              {activePrompts.map((prompt, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSend(prompt)}
+                  className="whitespace-nowrap px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700 transition-colors shrink-0 font-medium flex items-center gap-1 shadow-2xs"
+                >
+                  <Sparkles className="w-3 h-3 text-orange-500" />
+                  <span>{prompt}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Message List */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/60 text-xs">
+          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-slate-50/60 text-xs">
             {messages.map((m, idx) => (
               <div
                 key={idx}
-                className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'}`}
+                className={`flex gap-2.5 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div
-                  className={`p-3.5 rounded-2xl max-w-[92%] leading-relaxed ${
-                    m.sender === 'user'
-                      ? 'bg-orange-600 text-white rounded-br-none shadow-sm font-medium'
-                      : 'bg-white text-slate-800 rounded-bl-none border border-slate-200/90 shadow-sm'
-                  }`}
-                >
-                  {m.sender === 'user' ? m.text : renderFormattedMessage(m.text)}
+                {/* Assistant Avatar */}
+                {m.sender === 'assistant' && (
+                  <div className="w-7 h-7 rounded-full bg-sarkari-navy border border-orange-500/40 text-orange-400 flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                    <Bot className="w-3.5 h-3.5" />
+                  </div>
+                )}
+
+                <div className={`flex flex-col ${m.sender === 'user' ? 'items-end' : 'items-start'} max-w-[88%]`}>
+                  <div
+                    className={`p-3.5 rounded-2xl leading-relaxed ${
+                      m.sender === 'user'
+                        ? 'bg-orange-600 text-white rounded-tr-none shadow-xs font-medium'
+                        : 'bg-white text-slate-800 rounded-tl-none border border-slate-200 shadow-xs'
+                    }`}
+                  >
+                    {m.sender === 'user' ? m.text : renderFormattedMessage(m.text)}
+                  </div>
+
+                  {/* Grounded scheme cards attachment */}
+                  {m.matchedSchemes && m.matchedSchemes.length > 0 && (
+                    <div className="mt-2 space-y-1.5 w-full">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                        Verified Government Scheme Links:
+                      </span>
+                      {m.matchedSchemes.map((sc) => (
+                        <div
+                          key={sc._id}
+                          className="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center justify-between text-xs hover:border-orange-300 hover:shadow-xs transition-all"
+                        >
+                          <div className="min-w-0 flex-1 mr-2">
+                            <span className="font-bold text-slate-800 line-clamp-1">{sc.schemeName}</span>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              {sc.governmentLevel} Govt • {sc.category}
+                            </span>
+                          </div>
+                          <a
+                            href={sc.applicationLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-md font-bold text-[11px] flex items-center gap-1 shrink-0 transition-colors"
+                          >
+                            Apply <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Grounded scheme cards attachment */}
-                {m.matchedSchemes && m.matchedSchemes.length > 0 && (
-                  <div className="mt-2 space-y-1.5 w-full max-w-[92%]">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
-                      Quick Links from Verified Database:
-                    </span>
-                    {m.matchedSchemes.map((sc) => (
-                      <div
-                        key={sc._id}
-                        className="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center justify-between text-xs hover:border-orange-300 hover:shadow-xs transition-all"
-                      >
-                        <div className="min-w-0 flex-1 mr-2">
-                          <span className="font-bold text-slate-800 line-clamp-1">{sc.schemeName}</span>
-                          <span className="text-[10px] text-slate-500 font-medium">
-                            {sc.governmentLevel} Govt • {sc.category}
-                          </span>
-                        </div>
-                        <a
-                          href={sc.applicationLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-2.5 py-1 bg-orange-50 hover:bg-orange-100 text-orange-700 rounded-md font-bold text-[11px] flex items-center gap-1 shrink-0 transition-colors"
-                        >
-                          Apply <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-                    ))}
+                {/* User Avatar */}
+                {m.sender === 'user' && (
+                  <div className="w-7 h-7 rounded-full bg-orange-100 border border-orange-300 text-orange-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <User className="w-3.5 h-3.5" />
                   </div>
                 )}
               </div>
             ))}
+
             {loading && (
-              <div className="flex items-center gap-2 text-slate-600 text-xs py-2 bg-white px-3.5 rounded-xl border border-slate-200 w-fit shadow-xs">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin text-orange-600" />
-                <span>Checking verified criteria in MongoDB database...</span>
+              <div className="flex gap-2.5 items-start">
+                <div className="w-7 h-7 rounded-full bg-sarkari-navy border border-orange-500/40 text-orange-400 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5" />
+                </div>
+                <div className="flex items-center gap-2 text-slate-600 text-xs py-2.5 px-3.5 bg-white rounded-2xl rounded-tl-none border border-slate-200 shadow-xs">
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-orange-600" />
+                  <span className="animate-pulse">Assistant is thinking & checking verified criteria...</span>
+                </div>
               </div>
             )}
             <div ref={messagesEndRef} />
@@ -345,7 +390,7 @@ I can answer your questions about Central and State government schemes, explain 
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask about any scheme, documents, or rules..."
+              placeholder="Ask anything naturally (like ChatGPT)..."
               className="flex-1 px-3.5 py-2.5 text-xs bg-slate-100 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-800 placeholder:text-slate-400"
               disabled={loading}
             />

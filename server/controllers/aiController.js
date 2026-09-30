@@ -5,13 +5,17 @@ const { generateAssistantResponse } = require('../services/aiAssistantService');
 // @access  Public
 const handleChat = async (req, res) => {
   try {
-    const { message, language = 'en' } = req.body;
+    const { message, language = 'en', conversationHistory = [] } = req.body;
 
     if (!message || message.trim() === '') {
       return res.status(400).json({ success: false, message: 'Message cannot be empty.' });
     }
 
-    const response = await generateAssistantResponse(message.trim(), language);
+    const response = await generateAssistantResponse(
+      message.trim(),
+      language,
+      Array.isArray(conversationHistory) ? conversationHistory : []
+    );
 
     res.json({
       success: true,

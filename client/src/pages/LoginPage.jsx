@@ -16,7 +16,8 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const from = location.state?.from?.pathname || '/dashboard';
+  const from = location.state?.from?.pathname || (typeof location.state?.from === 'string' ? location.state.from : '/dashboard');
+  const featureName = location.state?.feature;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +51,16 @@ export default function LoginPage() {
             Access your saved schemes, eligibility history, and welfare updates.
           </p>
         </div>
+
+        {featureName && (
+          <div className="p-3.5 bg-orange-50 border border-orange-200 text-orange-950 text-xs rounded-xl font-medium flex items-center gap-2.5">
+            <Shield className="w-5 h-5 text-orange-600 shrink-0" />
+            <div>
+              <p className="font-bold text-orange-950">Authentication Required</p>
+              <p className="text-[11px] text-orange-800">Please log in to your citizen account to access <strong>{featureName}</strong>.</p>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl font-medium">

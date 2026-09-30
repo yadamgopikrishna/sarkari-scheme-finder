@@ -5,141 +5,90 @@ const Scheme = require('../models/Scheme');
  */
 const GOV_HELPLINES = {
   nationalConsumer: '1915 (National Consumer Helpline)',
-  pmKisan: '155261 / 1800-11-5526 / 011-24300606',
+  pmKisan: '155261 / 1800-11-5526 (Kisan Helpline)',
   kisanCallCenter: '1800-180-1551 (All India Farmer Toll-Free)',
   ayushmanBharat: '14555 / 1800-111-565 (PM-JAY Health Toll-Free)',
-  nspScholarship: '0120-6619540 (National Scholarship Portal Helpdesk)',
+  nspScholarship: '0120-6619540 (National Scholarship Helpdesk)',
   cpgrams: 'https://pgportal.gov.in (Central Grievance Redressal)',
-  seniorCitizens: '14567 (Elder Line - Senior Citizen Helpline)',
-  womenHelpline: '181 (Women in Distress / Domestic Violence)',
+  seniorCitizens: '14567 (Elder Line - Senior Citizens)',
+  womenHelpline: '181 (Women in Distress / Domestic Helpline)',
   childline: '1098 (National Childline Service)',
   disabilityHelpline: '1800-111-180 (Accessible India / Divyangjan)',
 };
 
 /**
- * Standard document requirements reference for Indian welfare schemes
+ * Comprehensive list of 36 States and Union Territories with colloquial aliases
  */
-const STANDARD_DOCUMENTS_INFO = `
-Here is the official document checklist typically required for Indian Central & State Government Welfare Schemes:
-
-1. **Identity & Demographic Verification:**
-   • Aadhaar Card (Used exclusively for biometric/OTP eKYC verification at official government counters; *Sarkari Scheme Finder never asks for or stores your Aadhaar number*).
-   • Voter ID / PAN Card / Driving License (Secondary photo ID).
-
-2. **Residence & Domicile Proof:**
-   • Domicile / Nativity Certificate (issued by Tahsildar / Revenue Department / MeeSeva / e-District).
-   • Electricity bill, water bill, or valid rental agreement.
-
-3. **Income & Economic Category Proof:**
-   • Annual Income Certificate issued by the competent Revenue Authority / Tahsildar within the last 1 year.
-   • BPL Ration Card (Antyodaya Anna Yojana / White Ration Card / Priority Household card).
-
-4. **Category & Community Certificates (If Applicable):**
-   • SC / ST / OBC / EWS / Minority community certificate issued by the Sub-Divisional Magistrate / Tehsildar.
-
-5. **Direct Benefit Transfer (DBT) Bank Account:**
-   • Bank Passbook copy with clear Account Number and IFSC Code.
-   • **Mandatory:** Bank account must be seeded with Aadhaar and mapped to the NPCI (National Payments Corporation of India) mapper for DBT transfers.
-
-6. **Occupation & Special Criteria Documents:**
-   • **Farmers:** Pattadar Passbook / Land Record (ROR-1B) / Encumbrance Certificate / Khasra-Khatauni.
-   • **Students:** Current institutional Bonafide Certificate, previous year marksheets, fee receipts.
-   • **Divyangjan (PwD):** Disability Certificate with benchmark percentage (40%+) / UDID (Unique Disability ID) card.
-   • **Senior Citizens:** Age proof (Birth Certificate / School Transfer Certificate / Aadhaar / Voter ID).
-   • **Artisans / MSME:** Udyam Registration Number / Artisan ID / PM Vishwakarma verification letter.
-`;
+const STATE_MAPPINGS = [
+  { name: 'Andhra Pradesh', aliases: ['andhra pradesh', 'andhra', 'ap', 'amaravati', 'vizag'] },
+  { name: 'Arunachal Pradesh', aliases: ['arunachal pradesh', 'arunachal', 'itanagar'] },
+  { name: 'Assam', aliases: ['assam', 'asom', 'guwahati'] },
+  { name: 'Bihar', aliases: ['bihar', 'patna'] },
+  { name: 'Chhattisgarh', aliases: ['chhattisgarh', 'chattisgarh', 'raipur'] },
+  { name: 'Goa', aliases: ['goa', 'panaji'] },
+  { name: 'Gujarat', aliases: ['gujarat', 'ahmedabad', 'surat', 'gandhinagar'] },
+  { name: 'Haryana', aliases: ['haryana', 'gurgaon', 'gurugram', 'faridabad'] },
+  { name: 'Himachal Pradesh', aliases: ['himachal pradesh', 'himachal', 'hp', 'shimla'] },
+  { name: 'Jharkhand', aliases: ['jharkhand', 'ranchi', 'jamshedpur'] },
+  { name: 'Karnataka', aliases: ['karnataka', 'bangalore', 'bengaluru', 'mysore'] },
+  { name: 'Kerala', aliases: ['kerala', 'kochi', 'trivandrum', 'thiruvananthapuram'] },
+  { name: 'Madhya Pradesh', aliases: ['madhya pradesh', 'mp', 'bhopal', 'indore'] },
+  { name: 'Maharashtra', aliases: ['maharashtra', 'mumbai', 'pune', 'nagpur'] },
+  { name: 'Manipur', aliases: ['manipur', 'imphal'] },
+  { name: 'Meghalaya', aliases: ['meghalaya', 'shillong'] },
+  { name: 'Mizoram', aliases: ['mizoram', 'aizawl'] },
+  { name: 'Nagaland', aliases: ['nagaland', 'kohima'] },
+  { name: 'Odisha', aliases: ['odisha', 'orissa', 'bhubaneswar'] },
+  { name: 'Punjab', aliases: ['punjab', 'amritsar', 'ludhiana'] },
+  { name: 'Rajasthan', aliases: ['rajasthan', 'jaipur', 'jodhpur', 'udaipur'] },
+  { name: 'Sikkim', aliases: ['sikkim', 'gangtok'] },
+  { name: 'Tamil Nadu', aliases: ['tamil nadu', 'tamilnadu', 'chennai', 'tn', 'coimbatore'] },
+  { name: 'Telangana', aliases: ['telangana', 'hyderabad', 'tg', 'ts', 'warangal'] },
+  { name: 'Tripura', aliases: ['tripura', 'agartala'] },
+  { name: 'Uttar Pradesh', aliases: ['uttar pradesh', 'up', 'lucknow', 'kanpur', 'noida', 'varanasi'] },
+  { name: 'Uttarakhand', aliases: ['uttarakhand', 'uttaranchal', 'dehradun'] },
+  { name: 'West Bengal', aliases: ['west bengal', 'bengal', 'kolkata', 'wb'] },
+  { name: 'Delhi', aliases: ['delhi', 'new delhi', 'ncr'] },
+  { name: 'Jammu and Kashmir', aliases: ['jammu and kashmir', 'jammu & kashmir', 'j&k', 'kashmir', 'srinagar', 'jammu'] },
+  { name: 'Ladakh', aliases: ['ladakh', 'leh'] },
+  { name: 'Puducherry', aliases: ['puducherry', 'pondicherry'] },
+];
 
 /**
- * Application procedure walkthrough
+ * Extracts demographic and economic profile by inspecting current query AND prior conversation turns
  */
-const APPLICATION_PROCEDURE_INFO = `
-Government schemes can be applied for through two primary channels across India:
+function extractProfileFromConversation(conversationHistory = [], currentMessage = '') {
+  // Combine all user utterances for cumulative context memory
+  const allUserTexts = conversationHistory
+    .filter(m => m.sender === 'user' || m.role === 'user')
+    .map(m => m.text || m.content || '')
+    .concat([currentMessage])
+    .join(' ')
+    .toLowerCase();
 
-### 1. Online Channel (Official Government Portals)
-1. **Identify the Official Portal:** Always use verified domains ending in \`.gov.in\` or \`.nic.in\` (available on our Scheme Details pages).
-2. **Citizen Registration:** Register using your mobile number and perform OTP verification (via DigiLocker or MeriPehchaan / Jan Parichay).
-3. **Fill Application Form:** Enter your demographic, educational, bank, and land/income details accurately.
-4. **Upload Scanned Documents:** Attach self-attested PDF/JPEG copies of required certificates (usually under 200KB-500KB each).
-5. **Aadhaar e-Sign / Submit:** Submit the application and save the generated **Acknowledgment / Application Reference Number (ARN)** for tracking.
-
-### 2. Offline / Assisted Channel (Local Citizen Centers)
-If you do not have internet access or need assistance with scanning and biometric authentication:
-• **Common Service Centres (CSC / Digital Seva Kendras):** Available in every village/panchayat.
-• **State Centers:**
-  - Andhra Pradesh: **Grama / Ward Sachivalayam (Village Secretariats)**
-  - Telangana: **MeeSeva Centers**
-  - Karnataka: **Bangalore One / Karnataka One / Grama One**
-  - Maharashtra: **Maha e-Seva Kendras / Aaple Sarkar**
-  - Tamil Nadu: **e-Sevai Centers**
-  - Uttar Pradesh: **Jan Seva Kendras**
-• **Block / Taluk Offices:** Visit your local Tehsildar, Block Development Officer (BDO), or District Social Welfare Office.
-`;
-
-/**
- * Extracts comprehensive demographic and intent profile from user prompt
- */
-function extractProfileFromQuery(message) {
-  const text = message.toLowerCase();
   const profile = {};
 
   // 1. Age extraction
-  const ageMatch = text.match(/\b(\d{1,3})\s*(?:-|–|\s)?(?:years?|yrs?|year-old|yr-old|yo)\b/i) ||
-                   text.match(/\b(?:age|aged)\s*[:=]?\s*(\d{1,3})\b/i) ||
-                   text.match(/(?:i am|am a|i'm)\s+(\d{1,3})\b/i);
+  const ageMatch = allUserTexts.match(/\b(\d{1,3})\s*(?:-|–|\s)?(?:years?|yrs?|year-old|yr-old|yo)\b/i) ||
+                   allUserTexts.match(/\b(?:age|aged)\s*[:=]?\s*(\d{1,3})\b/i) ||
+                   allUserTexts.match(/(?:i am|am a|i'm)\s+(\d{1,3})\b/i);
   if (ageMatch) {
     const val = parseInt(ageMatch[1] || ageMatch[2], 10);
     if (val >= 0 && val <= 110) profile.age = val;
   }
 
   // 2. Gender extraction
-  if (/\b(female|woman|women|girl|mother|widow|lady|mahila|beti)\b/i.test(text)) {
+  if (/\b(female|woman|women|girl|mother|widow|lady|mahila|beti|sister|daughter|pregnant|lactating)\b/i.test(allUserTexts)) {
     profile.gender = 'Female';
-  } else if (/\b(male|man|boy|father|purush)\b/i.test(text) && !/female|woman/i.test(text)) {
+  } else if (/\b(male|man|boy|father|son|brother|purush)\b/i.test(allUserTexts) && !/female|woman/i.test(allUserTexts)) {
     profile.gender = 'Male';
-  } else if (/\b(transgender|trans)\b/i.test(text)) {
-    profile.gender = 'Transgender';
   }
 
   // 3. State extraction
-  const stateMappings = [
-    { name: 'Andhra Pradesh', aliases: ['andhra pradesh', 'andhra', 'ap'] },
-    { name: 'Arunachal Pradesh', aliases: ['arunachal pradesh', 'arunachal'] },
-    { name: 'Assam', aliases: ['assam', 'asom'] },
-    { name: 'Bihar', aliases: ['bihar'] },
-    { name: 'Chhattisgarh', aliases: ['chhattisgarh', 'chattisgarh'] },
-    { name: 'Goa', aliases: ['goa'] },
-    { name: 'Gujarat', aliases: ['gujarat'] },
-    { name: 'Haryana', aliases: ['haryana'] },
-    { name: 'Himachal Pradesh', aliases: ['himachal pradesh', 'himachal', 'hp'] },
-    { name: 'Jharkhand', aliases: ['jharkhand'] },
-    { name: 'Karnataka', aliases: ['karnataka', 'bangalore', 'bengaluru'] },
-    { name: 'Kerala', aliases: ['kerala'] },
-    { name: 'Madhya Pradesh', aliases: ['madhya pradesh', 'mp'] },
-    { name: 'Maharashtra', aliases: ['maharashtra', 'mumbai', 'pune'] },
-    { name: 'Manipur', aliases: ['manipur'] },
-    { name: 'Meghalaya', aliases: ['meghalaya'] },
-    { name: 'Mizoram', aliases: ['mizoram'] },
-    { name: 'Nagaland', aliases: ['nagaland'] },
-    { name: 'Odisha', aliases: ['odisha', 'orissa'] },
-    { name: 'Punjab', aliases: ['punjab'] },
-    { name: 'Rajasthan', aliases: ['rajasthan', 'jaipur'] },
-    { name: 'Sikkim', aliases: ['sikkim'] },
-    { name: 'Tamil Nadu', aliases: ['tamil nadu', 'tamilnadu', 'chennai', 'tn'] },
-    { name: 'Telangana', aliases: ['telangana', 'hyderabad', 'tg', 'ts'] },
-    { name: 'Tripura', aliases: ['tripura'] },
-    { name: 'Uttar Pradesh', aliases: ['uttar pradesh', 'up', 'lucknow', 'noida'] },
-    { name: 'Uttarakhand', aliases: ['uttarakhand', 'uttaranchal'] },
-    { name: 'West Bengal', aliases: ['west bengal', 'bengal', 'kolkata', 'wb'] },
-    { name: 'Delhi', aliases: ['delhi', 'new delhi', 'ncr'] },
-    { name: 'Jammu and Kashmir', aliases: ['jammu and kashmir', 'jammu & kashmir', 'j&k', 'kashmir'] },
-    { name: 'Ladakh', aliases: ['ladakh', 'leh'] },
-    { name: 'Puducherry', aliases: ['puducherry', 'pondicherry'] },
-  ];
-
-  for (const item of stateMappings) {
+  for (const item of STATE_MAPPINGS) {
     for (const alias of item.aliases) {
       const regex = new RegExp(`\\b${alias}\\b`, 'i');
-      if (regex.test(text)) {
+      if (regex.test(allUserTexts)) {
         profile.state = item.name;
         break;
       }
@@ -147,46 +96,43 @@ function extractProfileFromQuery(message) {
     if (profile.state) break;
   }
 
-  // 4. Occupation / Category extraction
-  if (/\b(farmer|farmers|kisan|rythu|krishi|agriculture|farming|crop|landholding|cultivator)\b/i.test(text)) {
+  // 4. Occupation & Domain extraction
+  if (/\b(farmer|farmers|kisan|rythu|krishi|agriculture|farming|crop|landholding|cultivator|paddy|wheat)\b/i.test(allUserTexts)) {
     profile.occupation = 'Farmer';
     profile.category = 'Agriculture';
-  } else if (/\b(student|scholarship|college|university|school|study|fees|fee reimbursement|graduation|matric|btech|bsc|degree)\b/i.test(text)) {
+  } else if (/\b(student|scholarship|college|university|school|study|fees|fee reimbursement|graduation|matric|btech|degree|exam)\b/i.test(allUserTexts)) {
     profile.occupation = 'Student';
     profile.category = 'Education';
-  } else if (/\b(senior|pension|old age|retired|elderly|60 plus|vridha|vriddha)\b/i.test(text)) {
+  } else if (/\b(senior|pension|old age|retired|elderly|60 plus|65|70|vridha|vriddha|grandpa|grandma|parents)\b/i.test(allUserTexts)) {
     profile.category = 'Pension';
-    if (!profile.age) profile.age = 62;
-  } else if (/\b(health|hospital|medical|treatment|disease|illness|doctor|medicine|ayushman|cashless)\b/i.test(text)) {
+    if (!profile.age) profile.age = 65;
+  } else if (/\b(health|hospital|medical|treatment|disease|illness|doctor|medicine|ayushman|cashless|surgery)\b/i.test(allUserTexts)) {
     profile.category = 'Healthcare';
-  } else if (/\b(house|housing|awas|home|pucca house|slum|homeless)\b/i.test(text)) {
+  } else if (/\b(house|housing|awas|home|pucca house|slum|homeless|kaccha|roof)\b/i.test(allUserTexts)) {
     profile.category = 'Housing';
-  } else if (/\b(widow|single mother|pregnant|lactating|girl child|kanya|mahila|ladki)\b/i.test(text)) {
-    profile.category = 'Women & Child Welfare';
-    profile.gender = 'Female';
-  } else if (/\b(artisan|craftsperson|carpenter|blacksmith|goldsmith|potter|sculptor|cobbler|tailor|weaver|vishwakarma)\b/i.test(text)) {
-    profile.occupation = 'Artisan/Craftsperson';
-    profile.category = 'Employment & Skills';
-  } else if (/\b(vendor|street vendor|thela|rehri|dukaan|shopkeeper|hawker|svanidhi)\b/i.test(text)) {
+  } else if (/\b(tea stall|thela|rehri|vendor|street vendor|push cart|dukaan|small shop|hawker|svanidhi)\b/i.test(allUserTexts)) {
     profile.occupation = 'Street Vendor';
     profile.category = 'MSME & Entrepreneurship';
-  } else if (/\b(business|msme|startup|entrepreneur|mudra|loan|shop|enterprise)\b/i.test(text)) {
+  } else if (/\b(artisan|craftsperson|carpenter|blacksmith|goldsmith|potter|sculptor|cobbler|tailor|weaver|vishwakarma)\b/i.test(allUserTexts)) {
+    profile.occupation = 'Artisan/Craftsperson';
+    profile.category = 'Employment & Skills';
+  } else if (/\b(business|msme|startup|entrepreneur|mudra|loan|shop|enterprise|capital)\b/i.test(allUserTexts)) {
     profile.occupation = 'Business owner';
     profile.category = 'MSME & Entrepreneurship';
-  } else if (/\b(disabled|disability|handicapped|divyang|divyangjan|pwd|blind|deaf)\b/i.test(text)) {
+  } else if (/\b(disabled|disability|handicapped|divyang|divyangjan|pwd|blind|deaf)\b/i.test(allUserTexts)) {
     profile.category = 'Disability Welfare';
     profile.isDifferentlyAbled = true;
-  } else if (/\b(unemployed|job seeker|skill|training|pmkvy)\b/i.test(text)) {
+  } else if (/\b(jobless|unemployed|job seeker|skill|training|pmkvy|work)\b/i.test(allUserTexts)) {
     profile.occupation = 'Unemployed';
     profile.category = 'Employment & Skills';
   }
 
-  // 5. Income extraction (e.g. 50000, 2.5 lakh, 80,000)
-  const lakhMatch = text.match(/([0-9]+(?:\.[0-9]+)?)\s*(?:lakhs?|lacs?|l)/i);
+  // 5. Income extraction
+  const lakhMatch = allUserTexts.match(/([0-9]+(?:\.[0-9]+)?)\s*(?:lakhs?|lacs?|l)\b/i);
   if (lakhMatch) {
     profile.income = Math.round(parseFloat(lakhMatch[1]) * 100000);
   } else {
-    const rawIncomeMatch = text.match(/(?:income|earning|salary|earns)[^0-9]*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]{4,8})/i);
+    const rawIncomeMatch = allUserTexts.match(/(?:income|earning|salary|earns)[^0-9]*([0-9]{1,3}(?:,[0-9]{2,3})+|[0-9]{4,8})/i);
     if (rawIncomeMatch) {
       profile.income = parseInt(rawIncomeMatch[1].replace(/,/g, ''), 10);
     }
@@ -196,43 +142,53 @@ function extractProfileFromQuery(message) {
 }
 
 /**
- * Detects the high-level intent of the user's message
+ * Detects user intent and situational context
  */
 function detectIntent(message) {
   const text = message.toLowerCase().trim();
 
-  // 1. Greetings
-  if (/^(hi|hello|hey|namaste|vanakkam|namaskara|pranam|good\s*(morning|afternoon|evening)|help\b)/i.test(text) && text.split(/\s+/).length <= 4) {
+  // 1. Gratitude
+  if (/^(thank you|thanks|thx|dhanyawad|shukriya|great help|awesome|appreciate it)\b/i.test(text)) {
+    return 'GRATITUDE';
+  }
+
+  // 2. Greetings
+  if (/^(hi|hello|hey|namaste|vanakkam|namaskara|pranam|good\s*(morning|afternoon|evening)|sup\b|howdy)/i.test(text) && text.split(/\s+/).length <= 4) {
     return 'GREETING';
   }
 
-  // 2. Identity / Capabilities
-  if (/^(who are you|what is this|what can you do|about this portal|who made you|how can you help)/i.test(text) ||
-      (/\b(who are you|what can you do)\b/i.test(text) && text.split(/\s+/).length <= 7)) {
+  // 3. Identity / Capabilities
+  if (/^(who are you|what are you|what can you do|about this portal|who made you|are you an ai|are you chatgpt|introduce yourself)/i.test(text) ||
+      (/\b(who are you|what can you do)\b/i.test(text) && text.split(/\s+/).length <= 6)) {
     return 'IDENTITY_CAPABILITIES';
   }
 
-  // 3. Portal Workflow / How to check eligibility
-  if (/\b(how to use|how do i check|how to check eligibility|7 steps?|wizard|compare schemes?|how does this work|features of portal)\b/i.test(text)) {
+  // 4. Financial Hardship / Urgent Need
+  if (/\b(broke|no money|poor|poverty|financial help|in debt|starving|cannot afford|no food|urgent help|family is poor)\b/i.test(text)) {
+    return 'FINANCIAL_HARDSHIP';
+  }
+
+  // 5. Portal Navigation / 7 Steps
+  if (/\b(how to use|how do i check|check eligibility|7 steps?|wizard|how does this website work|features of portal)\b/i.test(text)) {
     return 'HOW_TO_USE_PORTAL';
   }
 
-  // 4. Document requirements
-  if (/\b(what documents|documents required|list of documents|document checklist|aadhaar needed|income certificate needed|caste certificate needed)\b/i.test(text)) {
+  // 6. Documents required
+  if (/\b(what documents|documents required|list of documents|document checklist|is aadhaar mandatory|income certificate needed|caste certificate)\b/i.test(text)) {
     return 'DOCUMENT_GUIDANCE';
   }
 
-  // 5. Application procedure
+  // 7. Application process
   if (/\b(how to apply|application process|where to apply|apply online|apply offline|csc center|meeseva|grama sachivalayam|application form)\b/i.test(text)) {
     return 'APPLICATION_PROCEDURE';
   }
 
-  // 6. Helplines & Complaints
+  // 8. Helplines & Grievances
   if (/\b(helpline|toll free|customer care|complaint|grievance|money not received|not credited|contact number|support)\b/i.test(text)) {
     return 'HELPLINES_AND_GRIEVANCES';
   }
 
-  // 7. Specific Scheme Lookup check
+  // 9. Specific Scheme Inquiry
   const popularSchemes = [
     'pm-kisan', 'pm kisan', 'pmkisan', 'ayushman', 'pm-jay', 'pmjay', 'pm awas', 'pmay',
     'atal pension', 'apy', 'mudra', 'pm svanidhi', 'svanidhi', 'vishwakarma', 'pm-vishwakarma',
@@ -240,9 +196,7 @@ function detectIntent(message) {
     'gruha lakshmi', 'pudhumai penn', 'kanya sumangala', 'national scholarship', 'nsp'
   ];
   for (const s of popularSchemes) {
-    if (text.includes(s)) {
-      return 'SPECIFIC_SCHEME_LOOKUP';
-    }
+    if (text.includes(s)) return 'SPECIFIC_SCHEME_LOOKUP';
   }
 
   return 'GENERAL_QUERY';
@@ -251,7 +205,7 @@ function detectIntent(message) {
 /**
  * Calls Google Gemini Generative API if GEMINI_API_KEY is configured in server environment
  */
-async function callGeminiIfAvailable(userMessage, systemContext) {
+async function callGeminiIfAvailable(currentMessage, conversationHistory = [], systemContext = '') {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey || apiKey.trim() === '' || apiKey === 'your_gemini_api_key_here') {
     return null;
@@ -259,32 +213,48 @@ async function callGeminiIfAvailable(userMessage, systemContext) {
 
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`;
+
+    // Format conversation history for Gemini API
+    const contents = [];
+    if (Array.isArray(conversationHistory)) {
+      conversationHistory.slice(-6).forEach(msg => {
+        const role = msg.sender === 'user' || msg.role === 'user' ? 'user' : 'model';
+        const text = msg.text || msg.content || '';
+        if (text) {
+          contents.push({ role, parts: [{ text }] });
+        }
+      });
+    }
+
+    // Append latest query
+    contents.push({
+      role: 'user',
+      parts: [{ text: currentMessage }],
+    });
+
     const payload = {
       systemInstruction: {
         parts: [
           {
-            text: `You are the official Sarkari Scheme Assistant AI for the "Sarkari Scheme Finder" portal. 
-Your role is to guide Indian citizens regarding Central, State, and UT welfare schemes, eligibility criteria, required documents, and official application procedures.
-Rules:
-1. Always be polite, respectful, and authoritative yet empathetic. Use Indian terminology where helpful (e.g. DBT, Aadhaar-seeded account, Ration Card, Tahsildar).
-2. Ground all specific scheme information on authentic Indian Government guidelines.
-3. Explicitly clarify that eligibility assessments are informational guidance, and final approvals rest exclusively with the respective Government Department.
-4. Sarkari Scheme Finder strictly NEVER asks for, stores, or transmits Aadhaar numbers or biometrics.
-5. Provide clear, structured bullet points with official portal links (.gov.in) where applicable.
+            text: `You are the Sarkari Scheme Assistant AI for the "Sarkari Scheme Finder" portal.
+Your personality is warm, friendly, empathetic, respectful, and engaging—just like ChatGPT, but tailored to Indian citizens.
+Guidelines:
+1. Speak naturally like a knowledgeable friend and advisor. Use warm Indian greetings ("Namaste!", "Hey there!", "I'd be delighted to help you!").
+2. Validate the user's situation with genuine human empathy (e.g. for farmers, students, mothers, or seniors).
+3. Ground all specific scheme details in authentic Indian Government guidelines (DBT, Aadhaar-seeded accounts, Ration Cards, MeeSeva/CSC).
+4. Clearly state that calculations are informational guidance, and final approvals rest with the respective Government Department.
+5. Reassure users that Sarkari Scheme Finder strictly NEVER asks for or stores Aadhaar numbers.
+6. Provide clear, visually appealing bullet points and include official .gov.in links.
+7. Always conclude with a friendly follow-up question or helpful suggestion to keep the conversation flowing smoothly.
 
-PORTAL SCHEMES DATABASE CONTEXT:
+VERIFIED PORTAL SCHEMES DATABASE CONTEXT:
 ${systemContext}`
           }
         ]
       },
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: userMessage }]
-        }
-      ],
+      contents,
       generationConfig: {
-        temperature: 0.3,
+        temperature: 0.5,
         maxOutputTokens: 1200,
       }
     };
@@ -295,162 +265,284 @@ ${systemContext}`
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      console.warn(`[Gemini API Warning] Status: ${response.status} ${response.statusText}`);
-      return null;
-    }
+    if (!response.ok) return null;
 
     const data = await response.json();
     const candidate = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (candidate && candidate.trim().length > 0) {
-      return candidate.trim();
-    }
-    return null;
+    return candidate ? candidate.trim() : null;
   } catch (err) {
-    console.warn('[Gemini API Call Failed, falling back to local grounded engine]:', err.message);
+    console.warn('[Gemini API Call Failed, using local conversational engine]:', err.message);
     return null;
   }
 }
 
 /**
- * Generates an AI response strictly grounded in verified database schemes
+ * Main Assistant Response Generator with friendly, ChatGPT-style natural dialogue
  */
-async function generateAssistantResponse(userMessage, language = 'en') {
+async function generateAssistantResponse(userMessage, language = 'en', conversationHistory = []) {
   const text = userMessage.trim();
   const intent = detectIntent(text);
-  const profile = extractProfileFromQuery(text);
+  const profile = extractProfileFromConversation(conversationHistory, text);
 
-  // 1. Handle Greetings
+  // 1. Gratitude
+  if (intent === 'GRATITUDE') {
+    return {
+      reply: `😊 **You are very welcome!** 
+
+I'm truly happy I could help you today. Navigating government portals can sometimes feel overwhelming, but remember that these welfare schemes were created to support you and your family.
+
+**Here's what you can explore next:**
+• Need help knowing **which documents** you should prepare?
+• Want step-by-step guidance on **how to submit an application**?
+• Or would you like to run the **7-Step Eligibility Wizard** for an official percentage match?
+
+Just let me know whenever you're ready! I'm right here with you. 🙏`,
+      matchedSchemes: [],
+      detectedProfile: profile,
+      suggestedPrompts: [
+        'What documents do I need to prepare?',
+        'How do I apply for schemes online?',
+        'Check schemes for my family members',
+      ],
+    };
+  }
+
+  // 2. Greetings
   if (intent === 'GREETING') {
     return {
-      reply: `🙏 **Namaste & Welcome to Sarkari Scheme Finder!**
+      reply: `🙏 **Namaste! It's wonderful to connect with you.**
 
-I am your dedicated **Government Scheme Assistant AI**. I help Indian citizens discover, understand, and apply for Central and State Government welfare schemes tailored to their demographic and financial profile.
+I am your friendly **Sarkari Scheme Assistant AI**. Think of me as your personal guide to navigating India's welfare initiatives—Central schemes, State programs, scholarships, pensions, and farmer assistance.
 
-**Here is what you can ask me right now:**
-• *"I am a 65-year-old farmer from Andhra Pradesh with an annual income of ₹80,000."*
-• *"What scholarship schemes are available for college students?"*
-• *"Tell me about Ayushman Bharat PM-JAY and how to get cashless hospital treatment."*
-• *"What documents are needed to apply for government housing schemes?"*
-• *"How do I check my eligibility using the 7-step wizard?"*
+**Tell me a little about yourself or your family:**
+• Are you looking for support as a **farmer**, a **student**, a **woman**, or a **senior citizen**?
+• Which **State** do you live in?
+• Or do you have a specific scheme in mind (like *PM-KISAN*, *Ayushman Bharat*, or *PMAY Housing*)?
 
-How may I assist you today?`,
+How can I help you today? Feel free to ask in plain, everyday words! 😊`,
       matchedSchemes: [],
       detectedProfile: profile,
+      suggestedPrompts: [
+        'I am a farmer looking for support',
+        'Scholarships for college students',
+        'Healthcare and hospital coverage',
+        'How does this portal work?',
+      ],
     };
   }
 
-  // 2. Handle Identity & Capabilities
+  // 3. Identity & Capabilities
   if (intent === 'IDENTITY_CAPABILITIES') {
     return {
-      reply: `🏛️ **About Sarkari Scheme Finder & Assistant AI**
+      reply: `🤖 **Hello! Let me introduce myself.**
 
-**Sarkari Scheme Finder** is a modern, citizen-centric digital portal designed to bridge the gap between Indian citizens and hundreds of Government welfare initiatives.
+I am the conversational AI assistant built for **Sarkari Scheme Finder**—India's citizen-centric welfare discovery portal.
 
-**Key Features of the Portal:**
-1. **7-Step Eligibility Wizard:** Evaluates Personal, Location, Financial, Employment, Education, Priority/Vulnerability, and Landholding details to determine scheme eligibility.
-2. **Match Percentage Calculation:** Displays realistic match rates (e.g. *95% Match*, *82% Match*) and a transparent checklist of satisfied vs. pending conditions.
-3. **Multilingual Interface:** Fully accessible in **8 Indian languages** (English, Telugu, Hindi, Tamil, Kannada, Malayalam, Marathi, Bengali).
-4. **Direct Official Application Links:** All schemes link directly to verified official \`.gov.in\` and \`.nic.in\` portals to prevent citizen exploitation by intermediaries.
-5. **Side-by-Side Scheme Comparison:** Compare up to 4 schemes across benefits, income ceilings, age limits, and requirements.
-6. **Zero Biometric / Aadhaar Storage:** The portal prioritizes citizen privacy and never collects or stores Aadhaar numbers.
+**What I Can Do For You:**
+1. **Understand Your Situation:** Just tell me your story—your occupation, age, state, or income—and I'll find schemes tailored to your exact profile.
+2. **Explain Eligibility in Simple Words:** No complicated bureaucratic jargon. I'll tell you clearly who qualifies, what the age/income limits are, and how much assistance you can receive.
+3. **Provide Document Checklists:** I'll list the exact papers you need so you don't face rejections at government counters.
+4. **Direct Official Redirection:** I will only link you to authentic **.gov.in** and **.nic.in** portals so you are 100% safe from fake intermediary agents.
+5. **Zero Aadhaar Storage:** Your privacy is sacred. We never collect or store your Aadhaar or biometric data.
 
-Feel free to ask about any specific scheme, demographic eligibility, or application procedure!`,
+What would you like to explore first?`,
       matchedSchemes: [],
       detectedProfile: profile,
+      suggestedPrompts: [
+        'How do I check my eligibility?',
+        'What schemes are available for women?',
+        'Schemes for small business owners',
+      ],
     };
   }
 
-  // 3. Handle Portal Walkthrough
+  // 4. Financial Hardship / Immediate Help
+  if (intent === 'FINANCIAL_HARDSHIP') {
+    return {
+      reply: `🤝 **I completely understand how stressful financial hardship can be.** 
+
+Please take heart—the Central and State Governments have established direct safety nets specifically designed to support families facing financial pressure.
+
+**Here are the most immediate welfare programs you should look into:**
+
+1. **Direct Income Support & Food Security:**
+   • **PM Garib Kalyan Anna Yojana (NFSA):** Free monthly foodgrains (rice/wheat) for Priority Household (PHH) and Antyodaya (AAY) ration cardholders.
+   • **State Cash Transfers:** If you live in Andhra Pradesh, Maharashtra, Karnataka, or Tamil Nadu, there are state programs (like *NTR Bharosa*, *Majhi Ladki Bahin*, *Gruha Lakshmi*) providing direct monthly bank transfers of ₹1,500 to ₹4,000.
+
+2. **Zero-Expense Hospital Treatment:**
+   • **Ayushman Bharat PM-JAY:** Provides up to **₹5,00,000 per family per year** for free secondary and tertiary hospitalization so medical emergencies don't drain your savings.
+
+3. **Livelihood & Small Business Capital:**
+   • **PM SVANidhi:** Collateral-free working capital loan starting at ₹10,000 (going up to ₹50,000) for street vendors, small stalls, and daily earners.
+   • **PM Mudra Yojana (Shishu):** Micro-loans up to ₹50,000 to start or stabilize small home enterprises.
+
+💡 **My Recommendation:** Tell me which **State** you currently reside in and your primary source of work, and I'll pinpoint the exact schemes with open application links for you right now!`,
+      matchedSchemes: [],
+      detectedProfile: profile,
+      suggestedPrompts: [
+        'Schemes in Andhra Pradesh',
+        'How to get an Ayushman health card?',
+        'Micro-loans for small business (PM Mudra)',
+      ],
+    };
+  }
+
+  // 5. Portal Walkthrough
   if (intent === 'HOW_TO_USE_PORTAL') {
     return {
-      reply: `📋 **How to Use the Sarkari Scheme Finder Portal**
+      reply: `📋 **Here is how you can use Sarkari Scheme Finder in 3 simple minutes:**
 
-Finding the right government schemes takes only 2 minutes on our portal:
+Finding schemes on our platform is completely free, private, and automated:
 
-### Step 1: Launch the 7-Step Eligibility Wizard
-Click on **"Check Eligibility"** in the top navigation bar.
+### 🌟 Step 1: Log In to Your Citizen Account
+Log in (or register in 30 seconds) so that your recommendations and bookmarks can be saved securely to your personal dashboard.
 
-### Step 2: Answer 7 Simple Demographic Steps
-1. **Personal Details:** Age, Gender, Marital Status.
-2. **Location:** State/UT, District, Urban/Rural area.
-3. **Financial Profile:** Annual Family Income, Ration Card Category (AAY, BPL, Non-BPL).
-4. **Employment:** Occupation (Farmer, Student, Street Vendor, Artisan, Salaried, Unemployed, etc.).
-5. **Education:** Highest qualification & current student status.
-6. **Priority / Vulnerability:** Disability benchmark (40%+), Minority community, EWS status.
-7. **Agriculture (Conditional):** If you selected Farmer, specify your agricultural landholding in acres.
+### 🌟 Step 2: Open the 7-Step Eligibility Wizard
+Click on **"Check Eligibility"** in the top navigation bar. You will be guided through 7 simple, accessible questions:
+1. **Personal:** Age, gender, marital status.
+2. **Location:** State/UT and District.
+3. **Financial:** Annual family income & ration card category.
+4. **Employment:** Occupation (Farmer, Student, Street Vendor, Artisan, Salaried, etc.).
+5. **Education:** Highest qualification & current enrollment.
+6. **Vulnerability:** Benchmark disability (40%+), minority community, or EWS priority.
+7. **Agriculture (Conditional):** Landholding in acres (only for farmers).
 
-### Step 3: Review Tailored Recommendations
-The system matches your profile against all active Central and State schemes. You will see:
-• **Match Score:** (e.g. *95% Match* for fully satisfied rules).
-• **Eligibility Breakdown:** Detailed green checkmarks (satisfied) and yellow notices (documents required).
-• **Direct Apply Button:** Takes you directly to the official government portal.
+### 🌟 Step 3: View Your Match Scores
+Our intelligent rule engine compares your answers against active schemes and shows you:
+• **Match Percentage:** (e.g. *95% Match* for fully satisfied criteria).
+• **Condition Checklist:** Clear green checks for satisfied rules, and yellow notes for documents you'll need.
+• **Direct Apply Link:** Takes you straight to the verified \`.gov.in\` application portal.
 
-### Step 4: Compare or Bookmark
-• Use the **"Compare"** button on any card to compare multiple schemes side-by-side.
-• Log in to save schemes to your **Citizen Dashboard** for future reference.`,
+Would you like to try it now, or do you have any questions before starting?`,
       matchedSchemes: [],
       detectedProfile: profile,
+      suggestedPrompts: [
+        'What documents should I keep ready?',
+        'Can I compare two schemes side-by-side?',
+        'Is my Aadhaar number needed?',
+      ],
     };
   }
 
-  // 4. Handle Document Guidance
+  // 6. Documents Guidance
   if (intent === 'DOCUMENT_GUIDANCE') {
     return {
-      reply: `📑 **Required Documents Checklist for Government Schemes**
+      reply: `📑 **Essential Documents Checklist for Government Schemes**
 
-${STANDARD_DOCUMENTS_INFO}
+To ensure your application goes through smoothly without administrative delays or rejections, keep digital and physical copies of these standard documents ready:
 
-💡 **Security Note:** You will only present these documents directly at official Government offices (Tahsildar, CSC, MeeSeva) or upload them to authenticated \`.gov.in\` portals. This portal never stores your identity documents.`,
+1. **Identity & Demographics:**
+   • **Aadhaar Card:** Used for biometric eKYC at official government desks (*Note: Our portal strictly never asks for or stores your Aadhaar number*).
+   • **Voter ID / PAN Card:** Secondary photo identification.
+
+2. **Proof of Residence (Nativity / Domicile):**
+   • Domicile Certificate issued by your local Tahsildar / Revenue Department / MeeSeva.
+   • Recent Electricity or Water bill.
+
+3. **Income & Economic Category:**
+   • **Income Certificate:** Issued within the last 12 months by the Revenue Department.
+   • **Ration Card:** BPL / Antyodaya (AAY) / White Card.
+
+4. **Category Certificate (If Applicable):**
+   • SC / ST / OBC / EWS certificate issued by the competent Sub-Divisional Magistrate or Tahsildar.
+
+5. **Direct Benefit Transfer (DBT) Bank Account:**
+   • Bank Passbook copy with clear Account Number and IFSC Code.
+   • **Crucial Step:** Your bank account **must be seeded with your Aadhaar** on the **NPCI mapper** at your bank branch. Over 95% of government funds are credited only via DBT!
+
+6. **Special Documents by Category:**
+   • **Farmers:** Pattadar Passbook / ROR-1B / Land Ownership Records.
+   • **Students:** Institutional Bonafide Certificate & Previous Marksheets.
+   • **Divyangjan (PwD):** Disability Certificate (40%+ benchmark) or UDID Card.
+
+Would you like to know how to get an Income Certificate or check your NPCI bank status?`,
       matchedSchemes: [],
       detectedProfile: profile,
+      suggestedPrompts: [
+        'How to check Aadhaar-bank account link?',
+        'How to apply for schemes online?',
+        'What are the farmer document rules?',
+      ],
     };
   }
 
-  // 5. Handle Application Procedure
+  // 7. Application Procedure
   if (intent === 'APPLICATION_PROCEDURE') {
     return {
       reply: `📝 **How and Where to Apply for Government Schemes**
 
-${APPLICATION_PROCEDURE_INFO}
+You can apply for any verified government scheme through either of these two official pathways:
 
-⚠️ **Important Tip:** Ensure your Bank Account is linked to your Aadhaar card through the **NPCI DBT Mapper** at your bank branch. Over 90% of welfare funds in India are now disbursed exclusively via Direct Benefit Transfer (DBT).`,
+### Option 1: Apply Online (From Home or Mobile)
+1. **Find Your Scheme:** Search for the scheme on our portal and click **"Apply on Official Website"**.
+2. **Official Government Portal:** You will land directly on the authenticated \`.gov.in\` or \`.nic.in\` site (e.g. *pmkisan.gov.in*, *pmjay.gov.in*, *scholarships.gov.in*).
+3. **Register / Log In:** Enter your mobile number and authenticate with OTP (via DigiLocker or MeriPehchaan).
+4. **Fill Application & Upload Documents:** Enter your demographic details, bank IFSC, and attach scanned PDF/JPEG certificates (usually <500 KB).
+5. **Submit & Save ARN:** Always download the acknowledgment slip and write down your **Application Reference Number (ARN)** to track status!
+
+### Option 2: Apply Offline with Local Assistance
+If you prefer in-person assistance, visit your nearest local citizen service center:
+• **Common Service Centres (CSC / Digital Seva Kendra):** Available in almost every village panchayat across India.
+• **State-Specific Citizen Centers:**
+  - **Andhra Pradesh:** Grama / Ward Sachivalayam (Village & Ward Secretariats)
+  - **Telangana:** MeeSeva Centers
+  - **Karnataka:** Grama One / Karnataka One / Bangalore One
+  - **Maharashtra:** Maha e-Seva Kendras / Aaple Sarkar
+  - **Tamil Nadu:** e-Sevai Centers
+  - **Uttar Pradesh:** Jan Seva Kendras
+
+💡 **Friendly Pro-Tip:** Never pay cash bribes to any unverified agent. Government welfare portal services at CSCs have fixed nominal citizen charges (usually ₹20-₹50).`,
       matchedSchemes: [],
       detectedProfile: profile,
+      suggestedPrompts: [
+        'What documents do I need to carry to CSC?',
+        'How do I track my application status?',
+        'Helplines for complaints if money is delayed',
+      ],
     };
   }
 
-  // 6. Handle Helplines & Grievances
+  // 8. Helplines & Grievances
   if (intent === 'HELPLINES_AND_GRIEVANCES') {
     return {
-      reply: `📞 **Official National Government Helplines & Grievance Portals**
+      reply: `📞 **Official National Government Helplines & Support Portals**
 
-If you have questions regarding scheme approvals, delayed DBT disbursements, or wish to register a grievance, please use these verified official channels:
+If your scheme installment is delayed, your card is not yet generated, or you want to file a grievance, here are the direct toll-free numbers:
 
-• **National Consumer Helpline:** \`${GOV_HELPLINES.nationalConsumer}\`
-• **PM-KISAN Helpline:** \`${GOV_HELPLINES.pmKisan}\`
-• **Kisan Call Centre (Agriculture):** \`${GOV_HELPLINES.kisanCallCenter}\` (Toll-Free, 6 AM to 10 PM)
+• **PM-KISAN Farmer Helpline:** \`${GOV_HELPLINES.pmKisan}\`
+• **All India Kisan Call Centre:** \`${GOV_HELPLINES.kisanCallCenter}\` *(Available 6:00 AM to 10:00 PM daily in 22 languages)*
 • **Ayushman Bharat (PM-JAY Health):** \`${GOV_HELPLINES.ayushmanBharat}\`
+• **National Consumer Helpline:** \`${GOV_HELPLINES.nationalConsumer}\`
 • **National Scholarship Portal (NSP):** \`${GOV_HELPLINES.nspScholarship}\`
 • **Senior Citizen Helpline (Elder Line):** \`${GOV_HELPLINES.seniorCitizens}\`
 • **Women in Distress Helpline:** \`${GOV_HELPLINES.womenHelpline}\`
-• **Childline:** \`${GOV_HELPLINES.childline}\`
+• **National Childline:** \`${GOV_HELPLINES.childline}\`
 • **Divyangjan (Disability) Helpline:** \`${GOV_HELPLINES.disabilityHelpline}\`
 
-🏛️ **Central Public Grievance Redress and Monitoring System (CPGRAMS):**
-You can file an official complaint online with any Central Ministry or State Department at [pgportal.gov.in](https://pgportal.gov.in).`,
+🏛️ **Central Public Grievance Portal (CPGRAMS):**
+You can file an official grievance directly to any Ministry or State Department at [pgportal.gov.in](https://pgportal.gov.in). Government departments are mandated to respond to CPGRAMS complaints within 30 days!
+
+Is there a specific scheme whose payment status you are trying to track?`,
       matchedSchemes: [],
       detectedProfile: profile,
+      suggestedPrompts: [
+        'Why was my PM-KISAN installment not credited?',
+        'How do I file a complaint on CPGRAMS?',
+        'Check farmer schemes in my state',
+      ],
     };
   }
 
-  // 7. Grounded Database Retrieval
-  // Build dynamic MongoDB conditions
+  // 9. Grounded Database Retrieval & Dynamic Matching
   const andConditions = [{ status: 'Active' }];
 
   if (profile.state) {
     andConditions.push({
-      $or: [{ state: 'All' }, { state: new RegExp(`^${profile.state}$`, 'i') }, { state: new RegExp(profile.state, 'i') }],
+      $or: [
+        { state: 'All' },
+        { state: new RegExp(`^${profile.state}$`, 'i') },
+        { state: new RegExp(profile.state, 'i') },
+      ],
     });
   }
 
@@ -464,8 +556,8 @@ You can file an official complaint online with any Central Ministry or State Dep
     });
   }
 
-  // Keyword extraction for scheme name or department
-  const stopWords = ['what', 'which', 'schemes', 'from', 'with', 'annual', 'income', 'check', 'available', 'eligibility', 'detail', 'details', 'tell', 'about', 'some', 'please', 'give', 'list', 'government', 'sarkari', 'yojana', 'yojanas'];
+  // Meaningful keywords extraction
+  const stopWords = ['what', 'which', 'schemes', 'from', 'with', 'annual', 'income', 'check', 'available', 'eligibility', 'detail', 'details', 'tell', 'about', 'some', 'please', 'give', 'list', 'government', 'sarkari', 'yojana', 'yojanas', 'want', 'need', 'know', 'help'];
   const queryTokens = text
     .replace(/[^\w\s-]/gi, ' ')
     .split(/\s+/)
@@ -486,7 +578,7 @@ You can file an official complaint online with any Central Ministry or State Dep
 
   let matchedSchemes = await Scheme.find({ $and: andConditions }).limit(6).lean();
 
-  // If strict query yielded 0, relax category/state to find top active schemes
+  // If query yielded 0, gracefully relax
   if (matchedSchemes.length === 0) {
     if (profile.state) {
       matchedSchemes = await Scheme.find({
@@ -512,7 +604,7 @@ You can file an official complaint online with any Central Ministry or State Dep
     }
   }
 
-  // Prepare database schemes context summary for Gemini or rule engine
+  // Format database context summary
   const schemesContextSummary = matchedSchemes.map((s, idx) => {
     const elig = s.eligibilityCriteria || {};
     const rules = [];
@@ -520,20 +612,20 @@ You can file an official complaint online with any Central Ministry or State Dep
     if (elig.income?.max > 0) rules.push(`Max Annual Income: ₹${elig.income.max.toLocaleString('en-IN')}`);
     if (elig.gender && elig.gender !== 'All') rules.push(`Gender: ${elig.gender}`);
     if (elig.occupations?.length && !elig.occupations.includes('All')) rules.push(`Occupation: ${elig.occupations.join(', ')}`);
-    if (elig.landHolding?.maxAcres > 0) rules.push(`Max Landholding: ${elig.landHolding.maxAcres} acres`);
+    if (elig.landHolding?.maxAcres > 0) rules.push(`Max Land: ${elig.landHolding.maxAcres} acres`);
 
     return `${idx + 1}. ${s.schemeName} (${s.governmentLevel} Govt - State: ${s.state})
 - Department: ${s.department}
 - Category: ${s.category}
 - Key Benefits: ${Array.isArray(s.benefits) ? s.benefits.join('; ') : s.benefits}
-- Eligibility Criteria: ${rules.length > 0 ? rules.join(' | ') : 'General citizen criteria'}
+- Criteria: ${rules.length > 0 ? rules.join(' | ') : 'General citizen criteria'}
 - Required Documents: ${Array.isArray(s.requiredDocuments) ? s.requiredDocuments.join(', ') : s.requiredDocuments}
 - Official Application Link: ${s.applicationLink}
 - Official Website: ${s.officialWebsite}`;
   }).join('\n\n');
 
-  // Attempt Gemini generative response if API key is present
-  const geminiReply = await callGeminiIfAvailable(text, schemesContextSummary);
+  // Attempt Gemini API if configured
+  const geminiReply = await callGeminiIfAvailable(text, conversationHistory, schemesContextSummary);
   if (geminiReply) {
     return {
       reply: geminiReply,
@@ -547,46 +639,52 @@ You can file an official complaint online with any Central Ministry or State Dep
         officialWebsite: s.officialWebsite,
       })),
       detectedProfile: profile,
+      suggestedPrompts: [
+        'How do I apply for these?',
+        'What documents are needed?',
+        'Check schemes for my family',
+      ],
     };
   }
 
-  // Local Grounded Engine Response
-  let replyText = `🙏 **Namaste!** Based on your query`;
+  // ChatGPT-style Conversational Natural Response
+  let replyText = `🌟 **Here is what I found for you!**\n\n`;
 
-  const profileSummary = [];
-  if (profile.age) profileSummary.push(`Age: ${profile.age} yrs`);
-  if (profile.gender) profileSummary.push(`Gender: ${profile.gender}`);
-  if (profile.state) profileSummary.push(`State: ${profile.state}`);
-  if (profile.occupation) profileSummary.push(`Occupation: ${profile.occupation}`);
-  if (profile.category && !profile.occupation) profileSummary.push(`Category: ${profile.category}`);
-  if (profile.income) profileSummary.push(`Income: ₹${profile.income.toLocaleString('en-IN')}/yr`);
+  const profileTags = [];
+  if (profile.age) profileTags.push(`${profile.age} years old`);
+  if (profile.gender) profileTags.push(`${profile.gender}`);
+  if (profile.state) profileTags.push(`Resident of ${profile.state}`);
+  if (profile.occupation) profileTags.push(`${profile.occupation}`);
+  if (profile.income) profileTags.push(`Income ₹${profile.income.toLocaleString('en-IN')}/year`);
 
-  if (profileSummary.length > 0) {
-    replyText += ` (**${profileSummary.join(' | ')}**), here are the most relevant verified government welfare schemes from our official database:\n\n`;
+  if (profileTags.length > 0) {
+    replyText += `Based on the details you mentioned (**${profileTags.join(' • ')}**), here are the top verified welfare schemes that match your profile:\n\n`;
   } else {
-    replyText += `, here are key verified government welfare schemes you can explore:\n\n`;
+    replyText += `Here are the top verified welfare schemes matching your inquiry:\n\n`;
   }
 
   matchedSchemes.forEach((scheme, idx) => {
-    replyText += `### ${idx + 1}. ${scheme.schemeName} (${scheme.governmentLevel} Government)\n`;
-    replyText += `• **Department / Ministry:** ${scheme.department}\n`;
-    replyText += `• **Primary Benefits:** ${Array.isArray(scheme.benefits) ? scheme.benefits.slice(0, 2).join('; ') : scheme.benefits}\n`;
+    replyText += `### ${idx + 1}. ${scheme.schemeName}\n`;
+    replyText += `🏛️ **Level & Department:** ${scheme.governmentLevel} Government (${scheme.department})\n`;
+    replyText += `💰 **What You Receive:** ${Array.isArray(scheme.benefits) ? scheme.benefits.slice(0, 2).join('; ') : scheme.benefits}\n`;
 
     const elig = scheme.eligibilityCriteria || {};
     const conds = [];
-    if (elig.age?.min > 0 || elig.age?.max < 100) conds.push(`Age: ${elig.age.min || 0} to ${elig.age.max || 100} yrs`);
-    if (elig.income?.max > 0) conds.push(`Max Annual Income: ₹${elig.income.max.toLocaleString('en-IN')}`);
-    if (elig.gender && elig.gender !== 'All') conds.push(`Gender: ${elig.gender}`);
+    if (elig.age?.min > 0 || elig.age?.max < 100) conds.push(`Age ${elig.age.min || 0} to ${elig.age.max || 100} yrs`);
+    if (elig.income?.max > 0) conds.push(`Family Income up to ₹${elig.income.max.toLocaleString('en-IN')}/yr`);
+    if (elig.gender && elig.gender !== 'All') conds.push(`For ${elig.gender}`);
     if (elig.occupations?.length && !elig.occupations.includes('All')) conds.push(`Occupation: ${elig.occupations.join(', ')}`);
-    if (elig.landHolding?.maxAcres > 0) conds.push(`Max Land: ${elig.landHolding.maxAcres} acres`);
+    if (elig.landHolding?.maxAcres > 0) conds.push(`Landholding up to ${elig.landHolding.maxAcres} acres`);
 
-    replyText += `• **Eligibility Highlights:** ${conds.length ? conds.join(' | ') : 'General citizen criteria'}\n`;
-    replyText += `• **Essential Documents:** ${Array.isArray(scheme.requiredDocuments) ? scheme.requiredDocuments.slice(0, 4).join(', ') : scheme.requiredDocuments}\n`;
-    replyText += `• **Official Portal:** [Apply on Official Website](${scheme.applicationLink})\n\n`;
+    replyText += `🎯 **Who Qualifies:** ${conds.length ? conds.join(' | ') : 'All eligible citizens residing in ' + scheme.state}\n`;
+    replyText += `📄 **Key Documents:** ${Array.isArray(scheme.requiredDocuments) ? scheme.requiredDocuments.slice(0, 4).join(', ') : scheme.requiredDocuments}\n`;
+    replyText += `🔗 **Direct Link:** [Apply on Official Website](${scheme.applicationLink})\n\n`;
   });
 
-  replyText += `\n💡 **Next Step:** You can run our full **7-Step Eligibility Wizard** for an in-depth score, or click any official link above to start your application.\n\n`;
-  replyText += `⚠️ **Important Disclaimer:** All eligibility assessments provided by this assistant are for informational guidance based on verified guidelines. Final eligibility and financial disbursements are determined exclusively by the respective Government Department after document verification.`;
+  replyText += `\n💬 **What would you like to do next?**\n`;
+  replyText += `• I can walk you through the **step-by-step application procedure** for any scheme above.\n`;
+  replyText += `• Or if you have another family member (like a student or parent), tell me about them and we'll check their benefits too!\n\n`;
+  replyText += `⚠️ *Note: Recommendations provided here are for informational guidance based on verified government criteria. Final approvals and disbursements rest exclusively with the respective Government Department.*`;
 
   return {
     reply: replyText,
@@ -600,12 +698,17 @@ You can file an official complaint online with any Central Ministry or State Dep
       officialWebsite: s.officialWebsite,
     })),
     detectedProfile: profile,
+    suggestedPrompts: [
+      'How do I apply for the first scheme?',
+      'What documents do I need to prepare?',
+      'Tell me about schemes in another state',
+    ],
   };
 }
 
 module.exports = {
   generateAssistantResponse,
-  extractProfileFromQuery,
+  extractProfileFromConversation,
   detectIntent,
   GOV_HELPLINES,
 };

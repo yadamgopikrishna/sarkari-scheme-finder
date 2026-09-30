@@ -21,7 +21,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 export default function SchemeDetailsPage() {
   const { id } = useParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, requireAuth } = useAuth();
   const { t } = useLanguage();
 
   const [scheme, setScheme] = useState(null);
@@ -49,8 +49,7 @@ export default function SchemeDetailsPage() {
   }, [id]);
 
   const handleSaveToggle = async () => {
-    if (!isAuthenticated) {
-      alert('Please log in or register to bookmark schemes to your profile.');
+    if (!requireAuth('Bookmark / Save Scheme')) {
       return;
     }
     try {

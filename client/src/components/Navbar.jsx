@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { user, isAuthenticated, isAdmin, logout, requireAuth } = useAuth();
   const { t } = useLanguage();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -103,6 +103,11 @@ export default function Navbar() {
             </Link>
             <Link
               to="/check-eligibility"
+              onClick={(e) => {
+                if (!requireAuth('7-Step Eligibility Wizard')) {
+                  e.preventDefault();
+                }
+              }}
               className="px-3.5 py-1.5 text-xs font-bold rounded-md text-white bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-sm hover:shadow transition-all flex items-center gap-1.5"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -110,6 +115,11 @@ export default function Navbar() {
             </Link>
             <Link
               to="/compare"
+              onClick={(e) => {
+                if (!requireAuth('Scheme Comparison Tool')) {
+                  e.preventDefault();
+                }
+              }}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1 ${
                 isActive('/compare') ? 'text-orange-600 bg-orange-50' : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
               }`}
@@ -226,14 +236,24 @@ export default function Navbar() {
           </Link>
           <Link
             to="/check-eligibility"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={(e) => {
+              setMobileMenuOpen(false);
+              if (!requireAuth('7-Step Eligibility Wizard')) {
+                e.preventDefault();
+              }
+            }}
             className="block px-3 py-2 text-sm font-bold rounded-md bg-orange-50 text-orange-600 hover:bg-orange-100"
           >
             {t('navCheckEligibility')}
           </Link>
           <Link
             to="/compare"
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={(e) => {
+              setMobileMenuOpen(false);
+              if (!requireAuth('Scheme Comparison Tool')) {
+                e.preventDefault();
+              }
+            }}
             className="block px-3 py-2 text-sm font-semibold rounded-md text-slate-800 hover:bg-slate-100"
           >
             {t('navCompare')}

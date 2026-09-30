@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import LoginWarningModal from '../components/LoginWarningModal';
 
 const AuthContext = createContext();
 
@@ -7,6 +8,10 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem('sarkari_token'));
   const [loading, setLoading] = useState(true);
+
+  // Global Login Warning Modal state
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [loginFeatureName, setLoginFeatureName] = useState('this feature');
 
   // Load user profile on initial mount if token is stored
   useEffect(() => {
@@ -70,6 +75,19 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = Boolean(user && token);
   const isAdmin = Boolean(user && user.role === 'admin');
 
+  /**
+   * Helper to check authentication before accessing protected actions.
+   * If not logged in, opens the warning modal and returns false.
+   */
+  const requireAuth = (featureName = 'this feature') => {
+    if (!isAuthenticated) {
+      setLoginFeatureName(featureName);
+      setLoginModalOpen(true);
+      return false;
+    }
+    return true;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -82,9 +100,19 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         updateProfile,
+        requireAuth,
+        openLoginModal: (feature) => {
+          setLoginFeatureName(feature || 'this feature');
+          setLoginModalOpen(true);
+        },
       }}
     >
       {children}
+      <LoginWarningModal
+        isOpen={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        featureName={loginFeatureName}
+      />
     </AuthContext.Provider>
   );
 };
