@@ -1405,9 +1405,13 @@ const sampleNotifications = [
   },
 ];
 
+const additionalSchemes = require('./additionalSchemes');
+
+const allSchemes = [...schemes, ...additionalSchemes];
+
 module.exports = {
   statesAndDistricts,
   categories,
-  schemes,
+  schemes: allSchemes,
   sampleNotifications,
 };

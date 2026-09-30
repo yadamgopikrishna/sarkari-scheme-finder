@@ -32,10 +32,10 @@ export default function HomePage() {
   const { requireAuth } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({
-    totalSchemes: 23,
-    centralSchemes: 14,
-    stateSchemes: 9,
-    activeSchemes: 23,
+    totalSchemes: 61,
+    centralSchemes: 22,
+    stateSchemes: 39,
+    activeSchemes: 61,
   });
   const [featuredSchemes, setFeaturedSchemes] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -178,15 +178,15 @@ export default function HomePage() {
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-slate-800/80">
             <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 backdrop-blur-sm">
-              <span className="text-2xl sm:text-3xl font-extrabold text-white block">23+</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-white block">{stats.totalSchemes || 61}+</span>
               <span className="text-xs text-slate-400">{t('statTotalSchemes')}</span>
             </div>
             <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 backdrop-blur-sm">
-              <span className="text-2xl sm:text-3xl font-extrabold text-blue-400 block">14</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-blue-400 block">{stats.centralSchemes || 22}</span>
               <span className="text-xs text-slate-400">{t('statCentral')}</span>
             </div>
             <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 backdrop-blur-sm">
-              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400 block">9</span>
+              <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400 block">{stats.stateSchemes || 39}</span>
               <span className="text-xs text-slate-400">{t('statState')}</span>
             </div>
             <div className="bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 backdrop-blur-sm">

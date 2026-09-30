@@ -296,7 +296,7 @@ drawTableRow(
 drawTableRow(
   'Automated Database Seeding',
   'Node.js (runSeed.js)',
-  'Populates 36 States/UTs, 11 categories, 23 realistic Central & State schemes (PM-KISAN, PMAY, PM-JAY, AP Thalliki Vandanam, etc.), and default accounts.'
+  'Populates 36 States/UTs, 11 categories, 61 comprehensive Central & State schemes covering all 28 States and 8 UTs, and default accounts.'
 );
 
 drawTableRow(
@@ -368,7 +368,7 @@ drawBullet('Demo Citizen Account:', 'Email: citizen@sarkari.gov.in  |  Password:
 drawSectionTitle('8. Verification & Build Quality Summary');
 drawParagraph('The entire project has been thoroughly tested, verified, and audited:');
 drawBullet('Frontend Production Build:', 'Vite v6.4.3 production build completes in under 38 seconds with zero errors, producing optimized CSS and JS bundles with Gzip compression.');
-drawBullet('Database Integrity:', 'All 36 States and Union Territories, 11 categories, and 23 Central/State schemes seed idempotently without index conflicts.');
+drawBullet('Database Integrity:', 'All 36 States and Union Territories, 11 categories, and 61 Central/State/UT schemes (22 Central, 39 State/UT) seed idempotently without index conflicts.');
 drawBullet('Chatbot Testing:', 'Verified against greetings, identity questions, 7-step wizard walkthroughs, document checklists, application procedures, helpline lookups, and demographic profile queries.');
 drawBullet('Security Audit:', 'Helmet headers active, JWT stateless validation verified, passwords encrypted with bcryptjs, zero Aadhaar storage verified, and all external links verified with rel="noopener noreferrer".');
 
