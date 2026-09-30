@@ -66,7 +66,8 @@ const checkEligibility = async (req, res) => {
         total: eligibleSchemes.length,
       },
       eligibleSchemes,
-      lowMatchSchemes: lowMatchSchemes.slice(0, 10), // provide a few for reference
+      ineligibleSchemes: lowMatchSchemes,
+      lowMatchSchemes: lowMatchSchemes.slice(0, 15),
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

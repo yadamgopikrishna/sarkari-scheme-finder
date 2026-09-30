@@ -157,13 +157,22 @@ export default function EligibilityFormPage() {
     setSubmitting(true);
 
     try {
+      const isArtisan =
+        formData.occupation === 'Artisan/Craftsperson' ||
+        formData.specialCategories.includes('Artisan/Craftsperson');
+      const isStreetVendor =
+        formData.occupation === 'Street Vendor' ||
+        formData.specialCategories.includes('Street vendor');
+
       // Map user form fields to engine structure
       const payload = {
         ...formData,
         isFarmer,
-        isStudent: formData.studentStatus === 'Yes',
+        isStudent: formData.studentStatus === 'Yes' || formData.occupation === 'Student',
         isBpl: formData.bplStatus === 'Yes',
         isDisability: formData.hasDisability === 'Yes',
+        isArtisan,
+        isStreetVendor,
       };
 
       const res = await api.post('/eligibility/check', payload);
@@ -550,6 +559,8 @@ export default function EligibilityFormPage() {
                 {[
                   'Farmer',
                   'Agricultural worker',
+                  'Artisan/Craftsperson',
+                  'Street Vendor',
                   'Student',
                   'Daily wage worker',
                   'Self-employed',

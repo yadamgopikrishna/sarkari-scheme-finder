@@ -462,7 +462,8 @@ const schemes = [
       genders: ['All'],
       states: ['All'],
       area: ['All', 'Urban'],
-      occupations: ['Self-employed', 'Daily wage worker', 'Business owner', 'Other'],
+      occupations: ['Street Vendor'],
+      streetVendorOnly: true,
       specialCategories: ['Street vendor'],
     },
     ineligibilityCriteria: [
@@ -613,7 +614,8 @@ const schemes = [
       income: { max: 300000 },
       genders: ['All'],
       states: ['All'],
-      occupations: ['Self-employed', 'Daily wage worker', 'Other'],
+      occupations: ['Artisan/Craftsperson', 'Handicraft worker'],
+      artisanOnly: true,
       specialCategories: ['Artisan/Craftsperson'],
     },
     ineligibilityCriteria: [

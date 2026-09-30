@@ -23,7 +23,11 @@ export default function ResultsPage() {
   const resultsData = location.state?.resultsData;
   const initialInputs = location.state?.userInputs;
 
-  const [schemes, setSchemes] = useState(resultsData?.eligibleSchemes || []);
+  const eligibleList = resultsData?.eligibleSchemes || [];
+  const ineligibleList = resultsData?.ineligibleSchemes || resultsData?.lowMatchSchemes || [];
+
+  const [activeTab, setActiveTab] = useState('eligible');
+  const [schemes, setSchemes] = useState(eligibleList);
   const [filteredSchemes, setFilteredSchemes] = useState([]);
   const [searchFilter, setSearchFilter] = useState('');
   const [levelFilter, setLevelFilter] = useState('All');
@@ -33,6 +37,17 @@ export default function ResultsPage() {
   const [categories, setCategories] = useState([]);
   const [comparedSchemes, setComparedSchemes] = useState([]);
   const [loadingFallback, setLoadingFallback] = useState(!resultsData);
+
+  // Sync schemes when activeTab changes
+  useEffect(() => {
+    if (resultsData) {
+      if (activeTab === 'eligible') {
+        setSchemes(eligibleList);
+      } else {
+        setSchemes(ineligibleList);
+      }
+    }
+  }, [activeTab, resultsData]);
 
   // If page loaded without navigation state (e.g. direct URL), fetch active schemes as fallback
   useEffect(() => {
@@ -159,7 +174,7 @@ export default function ResultsPage() {
         <div className="flex items-center gap-3 flex-wrap pt-2 text-xs">
           <div className="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
             <span className="text-slate-400">Total Evaluated: </span>
-            <span className="font-bold text-white">{filteredSchemes.length} Schemes</span>
+            <span className="font-bold text-white">{(resultsData?.totalEvaluated || filteredSchemes.length)} Schemes</span>
           </div>
           <div className="px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700">
             <span className="text-slate-400">High Match (≥ 80%): </span>
@@ -180,18 +195,58 @@ export default function ResultsPage() {
             </span>
           </div>
         </div>
+
+        {/* Eligibility Mode Switcher Tabs */}
+        {resultsData && (
+          <div className="flex items-center gap-3 pt-3 border-t border-slate-700/60">
+            <button
+              onClick={() => setActiveTab('eligible')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                activeTab === 'eligible'
+                  ? 'bg-emerald-500 text-slate-950 font-extrabold ring-2 ring-emerald-400/50'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>Eligible Schemes ({eligibleList.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('ineligible')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
+                activeTab === 'ineligible'
+                  ? 'bg-rose-500 text-white font-extrabold ring-2 ring-rose-400/50'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              <AlertCircle className="w-4 h-4" />
+              <span>Ineligible Schemes ({ineligibleList.length})</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Advisory Alert Banner */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-xs text-amber-800">
-        <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-        <div>
-          <span className="font-bold block mb-0.5">Please Note: "You May Be Eligible" Status</span>
-          <p className="leading-relaxed">
-            The match scores below are algorithmically calculated based on current public eligibility criteria. Government department authorities hold sole discretion over sanctioning benefits. Please verify that your official certificates (such as Income, Caste, Land RoR, or Disability) are valid before submitting applications on the official portal.
-          </p>
+      {activeTab === 'ineligible' ? (
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 flex items-start gap-3 text-xs text-rose-800">
+          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold block mb-0.5">Disqualified Schemes & Transparency Breakdown</span>
+            <p className="leading-relaxed">
+              These schemes were evaluated by the Sarkari Scheme Finder Engine and decisively disqualified because mandatory demographic, occupational, or economic criteria were not satisfied (e.g. non-artisan applying for handicraft programs, non-disabled applying for PwD welfare, or gender/state mismatches). Each card highlights the exact unmet condition.
+            </p>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3 text-xs text-amber-800">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold block mb-0.5">Please Note: "You May Be Eligible" Status</span>
+            <p className="leading-relaxed">
+              The match scores below are algorithmically calculated based on current public eligibility criteria. Government department authorities hold sole discretion over sanctioning benefits. Please verify that your official certificates (such as Income, Caste, Land RoR, or Disability) are valid before submitting applications on the official portal.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Filters Bar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">

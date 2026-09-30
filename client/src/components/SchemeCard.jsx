@@ -9,6 +9,7 @@ import {
   ChevronRight,
   Sparkles,
   Layers,
+  XCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -58,8 +59,18 @@ export default function SchemeCard({
 
   // Color styling based on match percentage
   const score = matchScore !== undefined ? matchScore : scheme.matchPercentage;
+  const isDisqualified = scheme.hardDisqualified || scheme.isEligible === false || (score !== undefined && score < 40);
+
   const getScoreBadge = () => {
     if (score === undefined || score === null) return null;
+    if (isDisqualified) {
+      return (
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-100 text-rose-800 text-xs font-bold border border-rose-300">
+          <XCircle className="w-3.5 h-3.5 text-rose-600" />
+          <span>Ineligible ({score}%)</span>
+        </div>
+      );
+    }
     if (score >= 80) {
       return (
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold border border-emerald-300">
@@ -83,7 +94,9 @@ export default function SchemeCard({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+    <div className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group ${
+      isDisqualified ? 'border-rose-200 bg-rose-50/20' : 'border-slate-200'
+    }`}>
       <div className="p-5">
         {/* Badges row */}
         <div className="flex items-center justify-between gap-2 mb-3">
@@ -129,9 +142,15 @@ export default function SchemeCard({
           )}
         </div>
 
-        {/* Eligibility Conditions Breakdown (if results check passed) */}
-        {(matchedConditions.length > 0 || verificationConditions.length > 0) && (
-          <div className="space-y-1 text-[11px] mb-3 border-t border-slate-100 pt-2.5">
+        {/* Eligibility Conditions Breakdown */}
+        {(matchedConditions.length > 0 || verificationConditions.length > 0 || unmetConditions.length > 0) && (
+          <div className="space-y-1.5 text-[11px] mb-3 border-t border-slate-100 pt-2.5">
+            {unmetConditions.slice(0, 2).map((u, idx) => (
+              <div key={idx} className="flex items-start gap-1.5 text-rose-700">
+                <XCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-600" />
+                <span className="line-clamp-2 font-medium">{u}</span>
+              </div>
+            ))}
             {matchedConditions.slice(0, 3).map((cond, idx) => (
               <div key={idx} className="flex items-start gap-1.5 text-emerald-700">
                 <CheckCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-600" />
