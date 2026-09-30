@@ -90,8 +90,19 @@ export default function BrowseSchemesPage() {
     } else {
       newParams.set(key, val);
     }
-    newParams.set('page', '1');
+    // Only reset to page 1 if a filter/search changed, NOT when changing page
+    if (key !== 'page') {
+      newParams.set('page', '1');
+    }
     setSearchParams(newParams);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages || newPage === page) return;
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set('page', newPage.toString());
+    setSearchParams(newParams);
+    window.scrollTo({ top: 180, behavior: 'smooth' });
   };
 
   const handleSearchSubmit = (e) => {
@@ -306,22 +317,50 @@ export default function BrowseSchemesPage() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-6">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 pt-6">
               <button
                 disabled={page <= 1}
-                onClick={() => updateParam('page', (page - 1).toString())}
-                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700"
+                onClick={() => handlePageChange(page - 1)}
+                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700 transition-colors"
                 aria-label="Previous page"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs font-semibold text-slate-600 px-3">
-                Page {page} of {totalPages}
-              </span>
+
+              {/* Numbered Page Buttons */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+                if (
+                  p === 1 ||
+                  p === totalPages ||
+                  (p >= page - 1 && p <= page + 1)
+                ) {
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => handlePageChange(p)}
+                      className={`min-w-[34px] h-[34px] px-2.5 rounded-lg text-xs font-bold transition-all ${
+                        p === page
+                          ? 'bg-orange-600 text-white shadow-sm ring-2 ring-orange-500/20'
+                          : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                } else if (p === page - 2 || p === page + 2) {
+                  return (
+                    <span key={p} className="px-1 text-xs text-slate-400">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+
               <button
                 disabled={page >= totalPages}
-                onClick={() => updateParam('page', (page + 1).toString())}
-                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700"
+                onClick={() => handlePageChange(page + 1)}
+                className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-40 text-slate-700 transition-colors"
                 aria-label="Next page"
               >
                 <ChevronRight className="w-4 h-4" />
