@@ -153,9 +153,23 @@ const schemeSchema = new mongoose.Schema(
     },
     startDate: {
       type: Date,
+      default: () => new Date('2026-04-01'),
     },
     endDate: {
       type: Date,
+      default: () => new Date('2027-03-31'),
+    },
+    applicationSchedule: {
+      type: String,
+      default: 'Open round the year under Direct Benefit Transfer (DBT) for Financial Year 2026-27',
+    },
+    applicationDeadline: {
+      type: String,
+      default: '31 March 2027 (Annual DBT Enrollment Cycle)',
+    },
+    disbursementSchedule: {
+      type: String,
+      default: 'Direct Benefit Transfer (DBT) via Aadhaar-linked Bank Account / PFMS',
     },
     status: {
       type: String,

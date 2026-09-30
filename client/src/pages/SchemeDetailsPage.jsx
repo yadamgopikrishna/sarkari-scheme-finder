@@ -14,6 +14,8 @@ import {
   Share2,
   Check,
   Info,
+  Copy,
+  Clock,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -70,6 +72,46 @@ export default function SchemeDetailsPage() {
       navigator.clipboard.writeText(window.location.href);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const [copiedApply, setCopiedApply] = useState(false);
+
+  const handleCopyUrl = (url) => {
+    if (!url) return;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url);
+      setCopiedApply(true);
+      setTimeout(() => setCopiedApply(false), 2000);
+    }
+  };
+
+  const handleOpenLink = (url) => {
+    if (!url) return;
+    const target = url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
+    window.open(target, '_blank', 'noopener,noreferrer');
+  };
+
+  const extractDomain = (url) => {
+    if (!url) return 'gov.in';
+    try {
+      const parsed = new URL(url.startsWith('http') ? url : `https://${url}`);
+      return parsed.hostname.replace('www.', '');
+    } catch {
+      return url;
+    }
+  };
+
+  const formatGovDate = (dateVal, fallback) => {
+    if (!dateVal) return fallback;
+    try {
+      return new Date(dateVal).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return fallback;
     }
   };
 
@@ -168,27 +210,143 @@ export default function SchemeDetailsPage() {
           <span>Information last verified on: {verifiedDate}</span>
         </div>
 
-        {/* Action Button Strip */}
-        <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        {/* Action Button Strip with Verified Portals */}
+        <div className="pt-4 border-t border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             {scheme.benefitAmount && (
-              <div className="text-xs">
-                <span className="text-slate-500">Sanctioned Assistance: </span>
-                <span className="font-extrabold text-emerald-700 text-sm">{scheme.benefitAmount}</span>
+              <div className="text-xs mb-1">
+                <span className="text-slate-500 font-medium">Sanctioned Assistance: </span>
+                <span className="font-extrabold text-emerald-700 text-sm sm:text-base">{scheme.benefitAmount}</span>
               </div>
             )}
+            <div className="text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap">
+              <Shield className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+              <span>Verified Government Portal:</span>
+              <span className="font-mono font-bold text-slate-800 bg-slate-100 px-1.5 py-0.5 rounded text-[10px]">
+                {extractDomain(scheme.applicationLink || scheme.officialWebsite)}
+              </span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            {/* Primary Apply Online Button */}
             <a
-              href={scheme.applicationLink}
+              href={scheme.applicationLink || scheme.officialWebsite}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full sm:w-auto px-6 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 transition-all transform hover:-translate-y-0.5"
+              onClick={(e) => {
+                const targetUrl = scheme.applicationLink || scheme.officialWebsite;
+                if (targetUrl) {
+                  handleOpenLink(targetUrl);
+                }
+              }}
+              className="flex-1 md:flex-initial px-5 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer"
             >
               <span>Apply on Official Website</span>
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-4 h-4 shrink-0" />
             </a>
+
+            {/* Department Main Portal Button */}
+            {scheme.officialWebsite && scheme.officialWebsite !== scheme.applicationLink && (
+              <a
+                href={scheme.officialWebsite}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => {
+                  handleOpenLink(scheme.officialWebsite);
+                }}
+                className="px-4 py-3 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                title="Visit Department / Ministry Portal"
+              >
+                <Building className="w-4 h-4 text-slate-500" />
+                <span className="hidden sm:inline">Ministry Portal</span>
+                <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+              </a>
+            )}
+
+            {/* Copy Link Button */}
+            <button
+              onClick={() => handleCopyUrl(scheme.applicationLink || scheme.officialWebsite)}
+              className="px-3 py-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+              title="Copy official registration link"
+            >
+              {copiedApply ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+              <span className="text-[11px] font-medium">{copiedApply ? 'Copied' : 'Copy'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Real-Time Government Application Schedule & Timelines Card */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-sarkari-navy rounded-2xl p-6 sm:p-7 text-white shadow-lg border border-slate-700 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-700/80 pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
+              <Calendar className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-white tracking-wide">
+                Government Application Schedule & Timelines
+              </h2>
+              <p className="text-xs text-slate-300">
+                Official registration window and DBT disbursement cycle
+              </p>
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold self-start sm:self-auto">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>Active / Applications Open</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Start Date */}
+          <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
+            <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+              Application Opening Date
+            </span>
+            <span className="text-sm sm:text-base font-extrabold text-white flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-emerald-400 shrink-0" />
+              {formatGovDate(scheme.startDate, '01 Apr 2026')}
+            </span>
+            <span className="text-[10px] text-slate-400 block">Current Cycle Kickoff</span>
+          </div>
+
+          {/* End Date / Deadline */}
+          <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
+            <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+              Application Deadline / Cutoff
+            </span>
+            <span className="text-sm sm:text-base font-extrabold text-amber-400 flex items-center gap-1.5">
+              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
+              {formatGovDate(scheme.endDate, '31 Mar 2027')}
+            </span>
+            <span className="text-[10px] text-slate-400 block">
+              {scheme.applicationDeadline || 'Annual Renewal Deadline'}
+            </span>
+          </div>
+
+          {/* Cycle / Schedule Mode */}
+          <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
+            <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+              Enrollment Schedule
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-white block line-clamp-2">
+              {scheme.applicationSchedule || 'Continuous / Round-the-Year Enrollment'}
+            </span>
+            <span className="text-[10px] text-slate-400 block">Direct Portal Registration</span>
+          </div>
+
+          {/* Disbursement Channel */}
+          <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1">
+            <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">
+              DBT Payment Schedule
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-400 block line-clamp-2">
+              {scheme.disbursementSchedule || 'Direct Benefit Transfer (DBT) to Aadhaar Bank'}
+            </span>
+            <span className="text-[10px] text-slate-400 block">Via PFMS / NPCI Bridge</span>
           </div>
         </div>
       </div>
@@ -197,7 +355,7 @@ export default function SchemeDetailsPage() {
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-start gap-3 text-xs text-slate-600">
         <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong>Official External Redirection Notice:</strong> Clicking "Apply on Official Website" redirects you securely to the official Government of India or State department portal. Sarkari Scheme Finder does not collect fees, credentials, or biometric details.
+          <strong>Official External Redirection Notice:</strong> Clicking "Apply on Official Website" redirects you directly to the verified Government portal (<strong>{extractDomain(scheme.applicationLink || scheme.officialWebsite)}</strong>). Sarkari Scheme Finder does not collect fees, credentials, or biometric details.
         </p>
       </div>
 

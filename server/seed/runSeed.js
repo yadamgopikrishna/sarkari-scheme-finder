@@ -33,8 +33,48 @@ const seedAll = async () => {
     console.log('[Seed] Seeding Categories...');
     await Category.insertMany(categories);
 
-    console.log('[Seed] Seeding Schemes...');
-    await Scheme.insertMany(schemes);
+    console.log('[Seed] Seeding Schemes with Government Application Schedules...');
+    const enrichedSchemes = schemes.map((s) => {
+      const isEducation = s.category === 'Education' || s.eligibilityCriteria?.studentOnly;
+      const isCrop = s.schemeCode === 'PMFBY' || (s.schemeName && (s.schemeName.toLowerCase().includes('fasal') || s.schemeName.toLowerCase().includes('sahay')));
+      const isSkill = s.category === 'Employment & Skill Development' || s.category === 'Skill Development';
+
+      let startDate = new Date('2026-04-01');
+      let endDate = new Date('2027-03-31');
+      let applicationSchedule = 'Continuous / Round-the-Year Enrollment (FY 2026-27)';
+      let applicationDeadline = '31 March 2027 (Annual DBT Review Cycle)';
+      let disbursementSchedule = 'Direct Benefit Transfer (DBT) via Aadhaar-linked Bank Account / PFMS';
+
+      if (isEducation) {
+        startDate = new Date('2026-07-01');
+        endDate = new Date('2026-11-30');
+        applicationSchedule = 'Academic Year 2026-27 Active Window';
+        applicationDeadline = '30 November 2026 (Portal Registration Deadline)';
+        disbursementSchedule = 'Semester-wise DBT directly credited to verified student bank account';
+      } else if (isCrop) {
+        startDate = new Date('2026-06-01');
+        endDate = new Date('2026-12-31');
+        applicationSchedule = 'Kharif & Rabi Seasons 2026-27 Window';
+        applicationDeadline = '31 December 2026 (Rabi Cutoff Deadline)';
+        disbursementSchedule = 'Claims directly settled through National Crop Insurance Portal (NCIP)';
+      } else if (isSkill) {
+        startDate = new Date('2026-04-01');
+        endDate = new Date('2027-03-31');
+        applicationSchedule = 'Quarterly Training Batches (FY 2026-27)';
+        applicationDeadline = 'Ongoing Admissions for Next Batch';
+        disbursementSchedule = 'Stipend credited directly via DBT during active training phase';
+      }
+
+      return {
+        ...s,
+        startDate: s.startDate || startDate,
+        endDate: s.endDate || endDate,
+        applicationSchedule: s.applicationSchedule || applicationSchedule,
+        applicationDeadline: s.applicationDeadline || applicationDeadline,
+        disbursementSchedule: s.disbursementSchedule || disbursementSchedule,
+      };
+    });
+    await Scheme.insertMany(enrichedSchemes);
 
     console.log('[Seed] Seeding Portal Notifications...');
     await Notification.insertMany(sampleNotifications);

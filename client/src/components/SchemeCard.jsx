@@ -10,6 +10,7 @@ import {
   Sparkles,
   Layers,
   XCircle,
+  Calendar,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -140,6 +141,12 @@ export default function SchemeCard({
               Assistance: {scheme.benefitAmount}
             </span>
           )}
+          {scheme.applicationDeadline && (
+            <div className="flex items-center gap-1 text-[10px] text-slate-500 font-semibold mt-1.5 pt-1.5 border-t border-slate-200/60">
+              <Calendar className="w-3 h-3 text-orange-500 shrink-0" />
+              <span className="line-clamp-1">{scheme.applicationDeadline}</span>
+            </div>
+          )}
         </div>
 
         {/* Eligibility Conditions Breakdown */}
@@ -208,13 +215,31 @@ export default function SchemeCard({
           </button>
         </div>
 
-        <Link
-          to={`/schemes/${schemeId}`}
-          className="px-3 py-1.5 text-xs font-bold text-white bg-sarkari-navy hover:bg-slate-800 rounded-lg flex items-center gap-1 transition-all shadow-sm"
-        >
-          <span>{t('btnViewDetails')}</span>
-          <ChevronRight className="w-3.5 h-3.5" />
-        </Link>
+        <div className="flex items-center gap-1.5">
+          {scheme.applicationLink && (
+            <a
+              href={scheme.applicationLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(scheme.applicationLink, '_blank', 'noopener,noreferrer');
+              }}
+              className="px-2.5 py-1.5 text-xs font-bold text-orange-700 bg-orange-50 hover:bg-orange-100 rounded-lg flex items-center gap-1 border border-orange-200 transition-all shadow-xs"
+              title="Apply on Official Government Website"
+            >
+              <span>Apply</span>
+              <ExternalLink className="w-3 h-3 text-orange-600" />
+            </a>
+          )}
+          <Link
+            to={`/schemes/${schemeId}`}
+            className="px-3 py-1.5 text-xs font-bold text-white bg-sarkari-navy hover:bg-slate-800 rounded-lg flex items-center gap-1 transition-all shadow-sm"
+          >
+            <span>{t('btnViewDetails')}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
       </div>
     </div>
   );
