@@ -9,11 +9,13 @@
     "client": "npm run dev --prefix client",
     "seed": "npm run seed --prefix server",
     "tunnel": "ngrok http 5173",
+    "pdf": "node generate_structure_pdf.js",
     "install:all": "npm install && npm install --prefix server && npm install --prefix client",
     "build": "npm run build --prefix client"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "pdfkit": "^0.20.2"
   },
   "keywords": [
     "mern",
